@@ -14,7 +14,8 @@ function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.mjs")
+      preload: path.join(__dirname, "preload.mjs"),
+      webSecurity: false
     },
     frame: false
   });
@@ -40,6 +41,30 @@ function createWindow() {
   });
   ipcMain.on("window-min", () => {
     win == null ? void 0 : win.minimize();
+  });
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    (details, callback) => {
+      callback({ requestHeaders: { ...details.requestHeaders, cookies: details.requestHeaders.authorization } });
+    }
+  );
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    let cookies = "";
+    if (details.responseHeaders && details.responseHeaders["set-cookie"]) {
+      details.responseHeaders["set-cookie"].map((item) => {
+        cookies += item.split(";")[0] + ";";
+      });
+    }
+    callback({
+      responseHeaders: {
+        "Access-Control-Allow-Origin": ["*"],
+        "Access-Control-Allow-Headers": "authorization",
+        "Access-Control-Expose-Headers": "Authorization",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
+        ...details.responseHeaders,
+        Authorization: cookies
+      }
+    });
   });
 }
 app.on("window-all-closed", () => {

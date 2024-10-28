@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -33,8 +33,10 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
+      webSecurity:false
     },
     frame: false,
+    
   });
 
   // Test active push message to Renderer-process.
@@ -63,6 +65,35 @@ function createWindow() {
   ipcMain.on("window-min", () => {
     win?.minimize();
   });
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    (details, callback) => {
+      callback({ requestHeaders: {  ...details.requestHeaders,cookies:details.requestHeaders.authorization } });
+    }
+  );
+
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    let cookies = "";
+    if (details.responseHeaders && details.responseHeaders["set-cookie"]) {
+      details.responseHeaders["set-cookie"].map((item) => {
+        cookies += item.split(";")[0] + ";";
+      });
+    }
+    callback({
+      responseHeaders: {
+        "Access-Control-Allow-Origin": ["*"],
+        "Access-Control-Allow-Headers":"authorization",
+        'Access-Control-Expose-Headers': 'Authorization',
+        'Access-Control-Allow-Credentials': 'true',
+        "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
+        ...details.responseHeaders,
+        Authorization:cookies,
+      },
+      
+    });
+  });
+  
+
+
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
