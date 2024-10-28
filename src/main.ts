@@ -1,9 +1,12 @@
 import { createApp } from "vue";
 import "./style.css";
+import "./assets/common.scss"
 import App from "./App.vue";
 import router from "./router";
+import Icon from "./components/Icon.vue";
 const app = createApp(App)
   .use(router)
+  .component("v-icon", Icon)
   .mount("#app");
 
 app.$nextTick(() => {

@@ -1,0 +1,32 @@
+$colors: (
+  primary: #409eff,
+  success: #67c23a,
+  info: #909399,
+  warning: #e6a23c,
+  error: #f56c6c
+);
+$heights: (
+  small: 24px,
+  default: 32px,
+  large: 40px
+);
+$size: (
+  small: 12px,
+  default: 14px,
+  large: 16px
+);
+$defaultColor:(
+  "color": "black",
+  "bgcolor":"white",
+  "border-color":"grey-6",
+
+  "hover-color":"grey-3",
+  "hover-bgcolor":'grey-9',
+
+  "active-color":"grey-1",
+  "active-bgcolor":"grey-8",
+
+  "disable-color":"grey-6",
+  "disable-bgcolor":"white",
+  "disable-border-color":"grey-8"
+)

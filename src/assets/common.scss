@@ -1,0 +1,6 @@
+// 使用scss循环 计算颜色，生成变量从-color-dark-1到-color-dark-9
+@import './init.scss';
+:root{
+    @include init();
+    --color-background:var(--vi-color-light-info-9);
+}

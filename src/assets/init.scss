@@ -1,0 +1,26 @@
+@import './vars.scss';
+@import './mixin.scss';
+
+@mixin init {
+  @each $name, $color in $colors {
+    @include set-var(('vi', 'color', $name), $color);
+
+    @for $num from 1 to 10 {
+      @include set-var(('vi', 'color', 'light', $name, $num), mix(#fff, $color, 10% * $num));
+    }
+
+    @for $num from 1 to 10 {
+      @include set-var(('vi', 'color', 'dark', $name, $num), mix(#000, $color, 10% * $num));
+    }
+  }
+
+  @each $name, $height in $heights {
+    @include set-var(('vi', 'height', $name), $height);
+  }
+  @include set-var(('vi', 'color', 'black'), mix(#fff, #000, 0%));
+  @include set-var(('vi', 'color', 'white'), mix(#fff, #000, 100%));
+  @for $num from 1 to 10 {
+    @include set-var(('vi', 'color', 'grey', $num), mix(#fff, #000, 10% * $num));
+  }
+}
+

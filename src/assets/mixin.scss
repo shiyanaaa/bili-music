@@ -1,0 +1,21 @@
+@mixin set-var($name, $value) {
+    $var: '-';
+    @each $n in $name {
+      @if $n != '' {
+        $var: #{$var}-#{$n};
+      }
+    }
+    #{$var}: #{$value};
+  }
+  @mixin show_line($line: 2) {
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: $line;
+    overflow: hidden;
+    display: -webkit-box;
+  }
+  @mixin line($line: 2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }

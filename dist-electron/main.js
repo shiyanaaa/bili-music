@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -15,7 +15,8 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs")
-    }
+    },
+    frame: false
   });
   win.webContents.on("did-finish-load", () => {
     win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
@@ -25,6 +26,21 @@ function createWindow() {
   } else {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
+  win.setMenu(null);
+  win.webContents.openDevTools();
+  ipcMain.on("window-max", () => {
+    if (win == null ? void 0 : win.isMaximized()) {
+      win == null ? void 0 : win.restore();
+    } else {
+      win == null ? void 0 : win.maximize();
+    }
+  });
+  ipcMain.on("close", () => {
+    win == null ? void 0 : win.close();
+  });
+  ipcMain.on("window-min", () => {
+    win == null ? void 0 : win.minimize();
+  });
 }
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
