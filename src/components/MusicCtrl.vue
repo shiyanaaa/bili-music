@@ -2,39 +2,95 @@
   <div class="music-ctrl">
     <div class="play-line" :style="lineStyle" @mouseup="onMouseUp"></div>
     <div class="ctrl-box">
-      <div class="pic-box">
+      <div class="pic-box" @click="onShowDetail">
         <img v-if="music" :src="music.pic" alt="" />
       </div>
       <div class="ctrl">
-        <div class="pre-next" @click="onPre">
-          <Icon name="icon-shangyishou" />
-        </div>
-        <div class="play-pause" :class="playStatus" @click="stopPlay">
-          <Icon :name="playStatus==='play'?'icon-07zanting':'icon-bofang'" />
-        </div>
+        <a-space>
+          <a-button @click="onPre">
+            <template #icon>
+              <v-icon name="icon-shangyishou" />
+            </template>
+          </a-button>
+          <a-button type="primary" size="large" @click="stopPlay">
+            <template #icon>
+              <v-icon :name="playStatus === 'play' ? 'icon-07zanting' : 'icon-bofang'" />
+            </template>
+          </a-button>
+          <a-button @click="onNext">
+            <template #icon>
+              <v-icon name="icon-xiayishou" />
+            </template>
+          </a-button>
+        </a-space>
 
-        <div class="pre-next" @click="onNext">
-          <Icon name="icon-xiayishou" />
-        </div>
+
+
       </div>
-      <div></div>
+      <div>
+        <a-button @click="showPlayListHandle">
+          <template #icon>
+            <v-icon name="icon-liebiao" />
+          </template>
+        </a-button>
+      </div>
     </div>
-    <audio
-      v-if="music && music.audio"
-      ref="audioRef"
-      :src="music.audio"
-      controls
-      @canplay="onCanPlay"
-      @timeupdate="onTimeUpdate"
-      @ended="onEnded"
-      style="display: none"
-      @play="onPlay"
-      @pause="onPause"
-    ></audio>
+    <audio v-if="music && music.audio" ref="audioRef" :src="music.audio" controls @canplay="onCanPlay"
+      @timeupdate="onTimeUpdate" @ended="onEnded" style="display: none" @play="onPlay" @pause="onPause"></audio>
   </div>
+  <a-drawer :headerStyle="headerStyle" :closable="false" height="100vh" :title="music ? music.title : ''"
+    placement="bottom" :open="showDetail" @close="onCloseDetail">
+    <template #extra>
+      <a-space class="action">
+        <a-button type="primary" size="small" @click="onCloseDetail">
+          <template #icon>
+            <v-icon name="icon-zuixiaohua" />
+          </template>
+        </a-button>
+        <a-button size="small" @click="winMin">
+          <template #icon>
+            <v-icon name="icon-zuixiaohua" />
+          </template>
+        </a-button>
+        <a-button type="dashed" size="small" @click="fullScreen">
+          <template #icon>
+            <v-icon name="icon-pingmuquanping" />
+          </template>
+        </a-button>
+        <a-button type="primary" danger size="small" @click="close">
+          <template #icon>
+            <v-icon name="icon-guanbi" />
+          </template>
+        </a-button>
+      </a-space>
+    </template>
+    <div class="background" :style="backgroundStyle"></div>
+  </a-drawer>
+  <a-drawer title="播放列表" placement="right" :headerStyle="playListHeaderStyle" :open="showPlayList"
+    @close="onClosePlayList">
+    <a-list item-layout="horizontal" :data-source="playList">
+      <template #renderItem="{ item }">
+        <a-list-item>
+          <a-list-item-meta style="cursor: pointer;" @click="changePlay(item)"
+            >
+            <template #title>
+              <a class="one-line block">{{ item.title }}</a>
+            </template>
+            <template #avatar>
+              <a-image style="border-radius: 4px;" :width="80" :height="45" :preview="false"
+                :src="item.pic" />
+            </template>
+            <template #description>
+              <div>{{ item.timelength }}</div>
+            </template>
+          </a-list-item-meta>
+        </a-list-item>
+      </template>
+    </a-list>
+
+  </a-drawer>
 </template>
 <script setup lang="ts">
-import Icon from "./Icon.vue";
 import { useStore } from "../store/index";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
@@ -43,18 +99,51 @@ const music = computed(() => store.getMusic);
 const playStatus = computed(() => store.playStatus);
 const nextPlay = computed(() => store.nextPlay);
 const audioRef = ref();
+const playList = computed(() => store.getMusicList)
 const onCanPlay = () => {
   if (playStatus.value === "play") audioRef.value && audioRef.value.play();
 };
-const onPlay=()=>{
+const showPlayList = ref(false)
+const showPlayListHandle = () => {
+  showPlayList.value = true;
+}
+
+const onClosePlayList = () => {
+  showPlayList.value = false;
+}
+const changePlay=(item:any)=>{
+  store.changePlayById(item.aid)
+  store.setPlayStatus('play')
+}
+const headerStyle = {
+
+  position: "relative",
+  zIndex: 9999
+}
+const playListHeaderStyle = {
+  '-webkit-app-region': 'no-drag'
+}
+const backgroundStyle = computed(() => {
+  return {
+    backgroundImage: `url(${music.value.pic})`
+  }
+})
+const showDetail = ref<boolean>(false);
+const onShowDetail = () => {
+  showDetail.value = true
+}
+const onCloseDetail = () => {
+  showDetail.value = false
+}
+const onPlay = () => {
   store.setPlayStatus('play')
 }
 
-const onPause=()=>{
+const onPause = () => {
   console.log("播放暂停");
-  if(!audioRef.value ) return;
-  if(!(audioRef.value.ended&&nextPlay.value))
-  store.setPlayStatus('pause')
+  if (!audioRef.value) return;
+  if (!(audioRef.value.ended && nextPlay.value))
+    store.setPlayStatus('pause')
 }
 const onPre = () => {
   onPlay()
@@ -64,9 +153,9 @@ const onNext = () => {
   onPlay()
   store.next();
 };
-const onMouseUp=(event:any) => {
-  audioRef.value.currentTime=event.offsetX/event?.target?.offsetWidth*audioRef.value.duration
-  playStatus.value==='play'
+const onMouseUp = (event: any) => {
+  audioRef.value.currentTime = event.offsetX / event?.target?.offsetWidth * audioRef.value.duration
+  playStatus.value === 'play'
 };
 const playInfo = ref({
   duration: 0,
@@ -75,7 +164,7 @@ const playInfo = ref({
 });
 const onTimeUpdate = () => {
   if (audioRef.value) {
-    if(Number.isNaN(audioRef.value.duration)) return;
+    if (Number.isNaN(audioRef.value.duration)) return;
     playInfo.value = {
       duration: audioRef.value.duration,
       currentTime: audioRef.value.currentTime,
@@ -83,16 +172,16 @@ const onTimeUpdate = () => {
     };
   }
 };
-const stopPlay=()=>{
-  if(playStatus.value==='play'){
+const stopPlay = () => {
+  if (playStatus.value === 'play') {
     audioRef.value.pause()
-  }else{
+  } else {
     audioRef.value.play()
   }
 }
 const onEnded = () => {
   console.log("播放结束");
-  console.log(nextPlay.value,playStatus.value);
+  console.log(nextPlay.value, playStatus.value);
   if (nextPlay.value && playStatus.value === "play") store.next();
 };
 const lineStyle = computed(() => {
@@ -103,12 +192,21 @@ const lineStyle = computed(() => {
 watch(
   () => store.playStatus,
   (newValue) => {
-    if(!audioRef.value) return;
-    if(newValue==='play'&& audioRef.value.paused){
+    if (!audioRef.value) return;
+    if (newValue === 'play' && audioRef.value.paused) {
       audioRef.value.play()
     }
   }
 );
+const fullScreen = () => {
+  window.ipcRenderer.send("window-max")
+}
+const close = () => {
+  window.ipcRenderer.send("close")
+}
+const winMin = () => {
+  window.ipcRenderer.send("window-min")
+}
 </script>
 <style scoped lang="scss">
 .music-ctrl {
@@ -120,6 +218,7 @@ watch(
   box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.12);
   background-color: var(--color-background);
   background-color: var(--);
+
   .play-line {
     width: 100%;
     position: absolute;
@@ -128,6 +227,7 @@ watch(
     background-color: rgba($color: #575757, $alpha: 0.1);
     height: 4px;
     cursor: pointer;
+
     &::after {
       content: "";
       display: block;
@@ -139,6 +239,7 @@ watch(
       left: var(--left, -100%);
     }
   }
+
   .ctrl-box {
     width: 100%;
     height: 100%;
@@ -147,9 +248,11 @@ watch(
     justify-content: space-between;
     padding: 0 15px;
     user-select: none;
+
     .ctrl {
       display: flex;
       align-items: center;
+
       .pre-next {
         width: 40px;
         height: 40px;
@@ -160,10 +263,12 @@ watch(
         background-color: rgba($color: #000000, $alpha: 0.05);
         border-radius: 4px;
         cursor: pointer;
-        &:hover{
+
+        &:hover {
           background-color: rgba($color: #000000, $alpha: 0.1);
         }
       }
+
       .play-pause {
         width: 60px;
         height: 60px;
@@ -175,26 +280,59 @@ watch(
         border-radius: 50%;
         margin: 0 20px;
         cursor: pointer;
-        &:hover{
+
+        &:hover {
           background-color: rgba($color: #000000, $alpha: 0.1);
         }
-        &.pause{
+
+        &.pause {
           background-color: #f16c8d;
           color: #fff;
         }
       }
     }
+
     .pic-box {
       height: 80px;
       width: calc(80px * calc(16 / 9));
       user-select: none;
+
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+          box-shadow: 0px 0px 12px rgba(0, 0, 0, .12);
+        }
       }
     }
   }
+}
+
+.background {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  left: -10%;
+  top: -10%;
+  background-size: cover;
+  filter: blur(20px);
+
+  &::after {
+    content: "";
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: rgba($color: #fff, $alpha: 0.4);
+  }
+}
+
+.action {
+  -webkit-app-region: no-drag;
 }
 </style>

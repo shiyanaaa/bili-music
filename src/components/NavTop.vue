@@ -4,15 +4,24 @@
       <img class="top-logo" src="/image/bili_logo.svg" alt="" />
     </div>
     <div class="setting">
-        <div class="setting-item" @click="winMin">
+      <a-space>
+        <a-button   size="small" @click="winMin">
+          <template #icon>
             <v-icon name="icon-zuixiaohua" />
-        </div>
-        <div class="setting-item" @click="fullScreen">
+          </template>
+        </a-button>
+        <a-button type="dashed" size="small" @click="fullScreen">
+          <template #icon>
             <v-icon name="icon-pingmuquanping" />
-        </div>
-        <div class="setting-item" @click="close">
+          </template>
+        </a-button>
+        <a-button type="primary" danger  size="small" @click="close">
+          <template #icon>
             <v-icon name="icon-guanbi" />
-        </div>
+          </template>
+        </a-button>
+      </a-space>
+        
     </div>
   </div>
 </template>
@@ -29,10 +38,10 @@ const winMin=()=>{
 </script>
 <style scoped lang="scss">
 .nav_top {
-  height: 70px;
+
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 16px 24px;
   justify-content: space-between;
   border-bottom: 1px solid #ccc;
   -webkit-app-region: drag;
@@ -47,23 +56,7 @@ const winMin=()=>{
     display: flex;
     align-items: center;
     -webkit-app-region: no-drag;
-    .setting-item{
-        -webkit-app-region: no-drag;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        font-size: 20px;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        &:not(:last-child){
-            margin-right: 10px;
-        }
-        
-        &:hover{
-            background: #eee;
-        }
-    }
+    
   }
 }
 </style>

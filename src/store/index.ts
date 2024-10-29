@@ -19,6 +19,12 @@ export const useStore = defineStore("music", {
     setPlayStatus(status: string) {
       this.playStatus = status;
     },
+    changePlayById(id: number){
+      const index=this.musicList.findIndex(item=>item.aid===id)
+      if(index>=0){
+        this.current=index;
+      }
+    },
     push(itemData: any) {
       // 在current位置插入
       if(this.musicList.length===0){

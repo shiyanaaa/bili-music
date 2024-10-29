@@ -62,6 +62,7 @@ onMounted(() => {
   getHotMusicList();
 });
 const musicList = ref<any>({});
+
 const onPlay=(item:any) => {
     getDetail({
         aid:item.aid,
@@ -77,14 +78,30 @@ const onPlay=(item:any) => {
       getVideoDetail(params as string).then((res) => {
         store.push({
             ...mainData,
-            audio: res.data.data.dash.audio[0].baseUrl
+            audio: res.data.data.dash.audio[0].baseUrl,
+            timelength:secondsToHHMMSS(res.data.data.timelength)
         })
         store.setPlayStatus('play')
       });
     });
   });
 };
+const secondsToHHMMSS=(seconds: number): string=> {
+  seconds=seconds/1000
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
 
+  return [
+    padZero(hours),
+    padZero(minutes),
+    padZero(secs)
+  ].join(':');
+}
+
+const padZero=(num: number): string=> {
+  return num.toString().padStart(2, '0');
+}
 const getHotMusicList = () => {
   let id = activeKey.value;
   if (!musicList.value[id])
