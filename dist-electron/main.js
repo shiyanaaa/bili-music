@@ -1,20 +1,23 @@
-import { app, BrowserWindow, ipcMain } from "electron";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
-createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname, "..");
+"use strict";
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+const electron = require("electron");
+const node_module = require("node:module");
+const node_url = require("node:url");
+const path = require("node:path");
+var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
+node_module.createRequire(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href);
+const __dirname$1 = path.dirname(node_url.fileURLToPath(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href));
+process.env.APP_ROOT = path.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
 function createWindow() {
-  win = new BrowserWindow({
+  win = new electron.BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.mjs"),
+      preload: path.join(__dirname$1, "preload.mjs"),
       webSecurity: false
     },
     frame: false
@@ -29,17 +32,17 @@ function createWindow() {
   }
   win.setMenu(null);
   win.webContents.openDevTools();
-  ipcMain.on("window-max", () => {
+  electron.ipcMain.on("window-max", () => {
     if (win == null ? void 0 : win.isMaximized()) {
       win == null ? void 0 : win.restore();
     } else {
       win == null ? void 0 : win.maximize();
     }
   });
-  ipcMain.on("close", () => {
+  electron.ipcMain.on("close", () => {
     win == null ? void 0 : win.close();
   });
-  ipcMain.on("window-min", () => {
+  electron.ipcMain.on("window-min", () => {
     win == null ? void 0 : win.minimize();
   });
   win.webContents.session.webRequest.onBeforeSendHeaders(
@@ -67,20 +70,18 @@ function createWindow() {
     });
   });
 }
-app.on("window-all-closed", () => {
+electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    app.quit();
+    electron.app.quit();
     win = null;
   }
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+electron.app.on("activate", () => {
+  if (electron.BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
-app.whenReady().then(createWindow);
-export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL
-};
+electron.app.whenReady().then(createWindow);
+exports.MAIN_DIST = MAIN_DIST;
+exports.RENDERER_DIST = RENDERER_DIST;
+exports.VITE_DEV_SERVER_URL = VITE_DEV_SERVER_URL;
