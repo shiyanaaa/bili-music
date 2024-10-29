@@ -21,6 +21,9 @@ import { RouterView } from 'vue-router';
 <style lang="scss" scoped>
 .main-box{
   min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-background);
 }
 </style>

@@ -1,10 +1,12 @@
 <template>
   <div class="index">
-    <a-input-search
+    <a-auto-complete
       v-model:value="keyword"
       placeholder="搜索"
       class="search"
       @search="onSearch"
+      @change="onSearchChange"
+      :options="suggestList"
     />
     <a-radio-group v-model:value="type" name="radioGroup">
       <a-radio value="1">歌曲</a-radio>
@@ -26,6 +28,7 @@ import { getDetail, getVideoDetail, getHotListByRid } from "../api/music";
 import { getEnc } from "../api/wbi";
 import MusicList from "../components/MusicList.vue";
 import { useStore } from '../store/index'
+import { getSuggest } from "../api/search";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore()
 const musicTypeList = ref([
@@ -48,13 +51,19 @@ const type = ref("1");
 const onSearch=()=>{
 
 }
-
+const suggestList= ref([]);
+const onSearchChange=()=>{
+  getSuggest(keyword.value).then((res) => {
+    console.log(res.data);
+    suggestList.value=res.data.result.tag    ;
+  });
+}
 onMounted(() => {
   getHotMusicList();
 });
 const playUrl = ref<string>("");
 const musicList = ref<any>({});
-const onPlay=(item) => {
+const onPlay=(item:any) => {
     getDetail({
         aid:item.aid,
         bvid:item.bvid
@@ -66,7 +75,7 @@ const onPlay=(item) => {
       cid: res.data.data.cid,
       fnval: "16",
     }).then((params) => {
-      getVideoDetail(params).then((res) => {
+      getVideoDetail(params as string).then((res) => {
         store.push({
             ...mainData,
             audio: res.data.data.dash.audio[0].baseUrl
@@ -90,6 +99,8 @@ const getHotMusicList = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
+  overflow-y: auto;
   .search {
     margin: 10px 0;
     max-width: 500px;

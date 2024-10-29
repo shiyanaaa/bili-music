@@ -18,6 +18,8 @@ import MusicCtrl from '../components/MusicCtrl.vue'
     display: flex;
     flex-direction: column;
     padding-bottom: 100px;
+    flex: 1;
+    min-height: 0;
     .page{
         flex: 1;
         min-height: 0;

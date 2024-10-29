@@ -19,9 +19,9 @@
 <script setup lang="ts">
 const emit = defineEmits(["play"]);
 defineProps({
-  list: { type: Array, default: () => [] },
+  list: { type: Array, default: () => [] as any[] },
 });
-const onPlay = (item) => {
+const onPlay = (item:any) => {
   emit("play", item);
 };
 </script>
@@ -75,6 +75,10 @@ $num: (
     .musicItem-title {
       padding: 5px 0;
       @include show_line(2);
+      cursor: pointer;
+      &:hover{
+        color: #f16c8d;
+      }
     }
   }
 }
