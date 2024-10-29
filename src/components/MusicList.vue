@@ -3,7 +3,7 @@
     <div
       class="musicItem"
       @click="onPlay(item)"
-      v-for="item in list"
+      v-for="item in props.list"
       :key="item.aid"
     >
       <div class="musicItem-img">
@@ -17,9 +17,10 @@
 </template>
 
 <script setup lang="ts">
+
 const emit = defineEmits(["play"]);
-defineProps({
-  list: { type: Array, default: () => [] as any[] },
+const props=defineProps({
+  list: { type: Array<any>, default: () => []  },
 });
 const onPlay = (item:any) => {
   emit("play", item);

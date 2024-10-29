@@ -15,6 +15,7 @@
   "dependencies": {
     "ant-design-vue": "^4.2.5",
     "axios": "^1.7.7",
+    "bili-music": "file:",
     "electron-squirrel-startup": "^1.0.1",
     "js-md5": "^0.8.3",
     "md5": "^2.3.0",

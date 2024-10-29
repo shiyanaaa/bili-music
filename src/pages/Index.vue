@@ -61,7 +61,6 @@ const onSearchChange=()=>{
 onMounted(() => {
   getHotMusicList();
 });
-const playUrl = ref<string>("");
 const musicList = ref<any>({});
 const onPlay=(item:any) => {
     getDetail({

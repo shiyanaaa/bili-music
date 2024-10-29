@@ -1,11 +1,9 @@
 "use strict";
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const electron = require("electron");
-const node_module = require("node:module");
 const node_url = require("node:url");
 const path = require("node:path");
 var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
-node_module.createRequire(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href);
 const __dirname$1 = path.dirname(node_url.fileURLToPath(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href));
 process.env.APP_ROOT = path.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
@@ -31,7 +29,17 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
   win.setMenu(null);
-  win.webContents.openDevTools();
+  win.webContents.on("before-input-event", (event, input) => {
+    console.log(input.key);
+    if (input.key === "F12") {
+      event.preventDefault();
+      if (win == null ? void 0 : win.webContents.isDevToolsOpened()) {
+        win == null ? void 0 : win.webContents.closeDevTools();
+      } else {
+        win == null ? void 0 : win.webContents.openDevTools();
+      }
+    }
+  });
   electron.ipcMain.on("window-max", () => {
     if (win == null ? void 0 : win.isMaximized()) {
       win == null ? void 0 : win.restore();

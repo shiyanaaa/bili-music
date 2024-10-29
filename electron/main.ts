@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain, session } from "electron";
-import { createRequire } from "node:module";
+import { app, BrowserWindow, ipcMain,  } from "electron";
+// import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-const require = createRequire(import.meta.url);
+// const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The built directory structure
@@ -51,7 +51,20 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
   win.setMenu(null);
-  win.webContents.openDevTools();
+  win.webContents.on("before-input-event", (event, input) => {
+    console.log(input.key);
+    if(input.key==="F12"){
+      event.preventDefault();
+      // 判断控制台是否已经开启
+      if(win?.webContents.isDevToolsOpened()){
+        win?.webContents.closeDevTools();
+      }else{
+        win?.webContents.openDevTools();
+      }
+    }
+    // win.webContents.openDevTools();
+  })
+  
   ipcMain.on("window-max", () => {
     if (win?.isMaximized()) {
       win?.restore();
