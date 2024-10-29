@@ -1,4 +1,15 @@
-import md5 from 'md5'
+import md5 from 'js-md5'
+import http from './http'
+
+export const getNav = () => {
+  return http.get('https://api.bilibili.com/x/web-interface/nav')
+}
+
+
+
+
+
+
 
 const mixinKeyEncTab = [
   46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
@@ -8,10 +19,10 @@ const mixinKeyEncTab = [
 ]
 
 // 对 imgKey 和 subKey 进行字符顺序打乱编码
-const getMixinKey = (orig) => mixinKeyEncTab.map(n => orig[n]).join('').slice(0, 32)
+const getMixinKey = (orig:string) => mixinKeyEncTab.map(n => orig[n]).join('').slice(0, 32)
 
 // 为请求参数进行 wbi 签名
-function encWbi(params, img_key, sub_key) {
+function encWbi(params:any, img_key:string, sub_key:string) {
   const mixin_key = getMixinKey(img_key + sub_key),
     curr_time = Math.round(Date.now() / 1000),
     chr_filter = /[!'()*]/g
@@ -28,37 +39,34 @@ function encWbi(params, img_key, sub_key) {
     })
     .join('&')
 
-  const wbi_sign = md5(query + mixin_key) // 计算 w_rid
+  const wbi_sign = md5.md5(query + mixin_key) // 计算 w_rid
 
   return query + '&w_rid=' + wbi_sign
 }
 
 // 获取最新的 img_key 和 sub_key
-async function getWbiKeys() {
-  const res = await fetch('https://api.bilibili.com/x/web-interface/nav', {
 
+
+
+export const getEnc=(params:Object)=>{
+  return new Promise((resolve,reject)=>{
+    getNav().then(res=>{
+      const {img_url,sub_url } =res.data?.data.wbi_img;
+      if(!img_url||!sub_url){
+        reject()
+      }
+      const img_key= img_url.slice(
+        img_url.lastIndexOf('/') + 1,
+        img_url.lastIndexOf('.')
+      );
+      const sub_key=sub_url.slice(
+        sub_url.lastIndexOf('/') + 1,
+        sub_url.lastIndexOf('.')
+      )
+     
+      const query = encWbi(params, img_key, sub_key)
+      resolve(query)
+    })
+    
   })
-  const { data: { wbi_img: { img_url, sub_url } } } = await res.json()
-
-  return {
-    img_key: img_url.slice(
-      img_url.lastIndexOf('/') + 1,
-      img_url.lastIndexOf('.')
-    ),
-    sub_key: sub_url.slice(
-      sub_url.lastIndexOf('/') + 1,
-      sub_url.lastIndexOf('.')
-    )
-  }
 }
-
-async function main() {
-  const web_keys = await getWbiKeys()
-  const params = { foo: '114', bar: '514', baz: 1919810 },
-    img_key = web_keys.img_key,
-    sub_key = web_keys.sub_key
-  const query = encWbi(params, img_key, sub_key)
-  console.log(query)
-}
-
-main()

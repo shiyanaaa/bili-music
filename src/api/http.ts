@@ -7,7 +7,6 @@ instance.interceptors.request.use((config) => {
     if(localStorage.getItem("authorization")){
         config.headers.authorization=localStorage.getItem("authorization")
     }
-    console.log(config)
     return config;
 });
 instance.interceptors.response.use(

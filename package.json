@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "ant-design-vue": "^4.2.5",
     "axios": "^1.7.7",
     "js-md5": "^0.8.3",
     "md5": "^2.3.0",
+    "pinia": "^2.2.4",
     "sass": "^1.80.4",
     "vue": "^3.4.21",
     "vue-router": "^4.4.5"

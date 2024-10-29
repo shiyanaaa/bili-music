@@ -3,9 +3,18 @@ import { RouterView } from 'vue-router';
 </script>
 
 <template>
+  <a-config-provider
+    :theme="{
+      token: {
+        colorPrimary: '#f16c8d',
+      },
+    }"
+  >
   <div class="main-box">
     <RouterView></RouterView>
   </div>
+  </a-config-provider>
+  
  
 </template>
 

@@ -4,8 +4,14 @@ import "./assets/common.scss"
 import App from "./App.vue";
 import router from "./router";
 import Icon from "./components/Icon.vue";
+import Antd from 'ant-design-vue';
+import { createPinia } from 'pinia'
+import 'ant-design-vue/dist/reset.css';
+const pinia = createPinia()
 const app = createApp(App)
   .use(router)
+  .use(Antd)
+  .use(pinia)
   .component("v-icon", Icon)
   .mount("#app");
 

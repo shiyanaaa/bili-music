@@ -67,7 +67,7 @@ function createWindow() {
   });
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
-      callback({ requestHeaders: {  ...details.requestHeaders,cookies:details.requestHeaders.authorization } });
+      callback({ requestHeaders: {  ...details.requestHeaders,cookies:details.requestHeaders.authorization,referer:'http://www.bilibili.com/' } });
     }
   );
 

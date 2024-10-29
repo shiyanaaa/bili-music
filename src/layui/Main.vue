@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import NavTop from '../components/NavTop.vue'
+import MusicCtrl from '../components/MusicCtrl.vue'
 </script>
 
 <template>
@@ -8,6 +9,7 @@ import NavTop from '../components/NavTop.vue'
     <div class="page">
         <router-view />
     </div>
+    <MusicCtrl />
   </div>
 </template>
 
@@ -15,10 +17,11 @@ import NavTop from '../components/NavTop.vue'
 .container{
     display: flex;
     flex-direction: column;
-
+    padding-bottom: 100px;
     .page{
         flex: 1;
         min-height: 0;
     }
+    
 }
 </style>
