@@ -2,12 +2,19 @@
   <div class="musicList">
     <div
       class="musicItem"
-      @click="onPlay(item)"
+      @click="toMusicDetail(item)"
       v-for="item in props.list"
       :key="item.aid"
     >
       <div class="musicItem-img">
         <img :src="item.pic" alt="" />
+        <div class="play">
+          <a-button   @click.stop="onPlay(item)">
+          <template #icon>
+            <v-icon name="icon-bofang" />
+          </template>
+        </a-button>
+        </div>
       </div>
       <div class="musicItem-title" v-html="item.title"></div>
     </div>
@@ -16,7 +23,9 @@
 
 <script setup lang="ts">
 import { getDetail, getVideoDetail } from "../api/music";
+import { useRouter } from "vue-router";
 import { useStore } from "../store/index";
+const router=useRouter()
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
 const emit = defineEmits(["play"]);
@@ -29,19 +38,14 @@ const onPlay = (item: any) => {
     bvid: item.bvid,
   }).then((res) => {
     const mainData = res.data.data;
-    getVideoDetail({
-      avid: item.aid,
-      bvid: item.bvid,
-      cid: res.data.data.cid,
-      fnval: "16",
-    }).then((res) => {
-      store.push({
-        ...mainData,
-        audio: res.data.data.dash.audio[0].baseUrl,
-        timelength: secondsToHHMMSS(res.data.data.timelength),
-      });
-      store.setPlayStatus("play");
+    store.push({
+      pic: mainData.pic,
+      title: mainData.title,
+      aid: mainData.aid,
+      bvid: mainData.bvid,
+      cid:mainData.cid
     });
+    store.setPlayStatus("play");
   });
 };
 const secondsToHHMMSS = (seconds: number): string => {
@@ -56,6 +60,9 @@ const secondsToHHMMSS = (seconds: number): string => {
 const padZero = (num: number): string => {
   return num.toString().padStart(2, "0");
 };
+const toMusicDetail=(item:any)=>{
+  router.push(`/detail?bvid=${item.bvid}`)
+}
 </script>
 
 <style scoped lang="scss">
@@ -94,6 +101,12 @@ $num: (
       padding-bottom: calc(100% * calc(9 / 16));
       position: relative;
       cursor: pointer;
+      .play{
+        position: absolute;
+        display: flex;
+        right: 10px;
+        bottom: 10px;
+      }
       img {
         width: 100%;
         height: 100%;

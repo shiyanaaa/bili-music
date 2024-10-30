@@ -3,6 +3,8 @@ import { onMounted, ref, computed,provide } from "vue";
 import { RouterView } from "vue-router";
 import zhCN from "ant-design-vue/es/locale/zh_CN";
 import { theme } from "ant-design-vue";
+import { useStore } from "./store";
+const store=useStore()
 const { darkAlgorithm, defaultAlgorithm } = theme;
 const locale = ref(zhCN);
 const themeData = computed(() => {
@@ -23,10 +25,19 @@ onMounted(() => {
   } else {
     isDark.value = useDarkKEY == "dark";
   }
+  let playList:any= localStorage.getItem("playList")
+  if(playList){
+    playList=JSON.parse(playList) as any[]
+    store.setPlayList(playList)
+  }
+  let current:any= localStorage.getItem("current")
+  if(current){
+    store.setIndex(Number(current))
+  }
 });
 const setDark=(val:boolean)=>{
   isDark.value=val
-  
+
 }
 provide("setDark", setDark)
 </script>

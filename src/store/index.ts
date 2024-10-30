@@ -23,6 +23,7 @@ export const useStore = defineStore("music", {
       const index=this.musicList.findIndex(item=>item.aid===id)
       if(index>=0){
         this.current=index;
+        localStorage.setItem("current", String(this.current))
       }
     },
     push(itemData: any) {
@@ -43,16 +44,35 @@ export const useStore = defineStore("music", {
         newList.splice(this.current, 0, itemData);
         this.musicList=newList
       }
-      console.log("push", this.musicList);
+      const save=this.musicList.map(item=>{
+        return {
+          pic:item.pic,
+          title:item.title,
+          singer:item.singer,
+          aid:item.aid,
+          bvid:item.bvid,
+          cid:item.cid,
+          audio:item.audio,
+          timelength:item.timelength
+        }
+      })
+      localStorage.setItem("playList", JSON.stringify(save))
+      console.log("save", this.musicList);
     },
     next() {
       // 下一首
       if (this.nextPlay) this.current++;
+      localStorage.setItem("current", String(this.current))
     },
     prev() {
       // 上一首
       if (this.prevPlay) this.current--;
+      localStorage.setItem("current", String(this.current))
     },
+    setIndex(num: number){
+      this.current=num
+      localStorage.setItem("current", String(this.current))
+    }
   },
   getters: {
     getMusicList: (state) => state.musicList,

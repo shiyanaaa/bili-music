@@ -17,7 +17,13 @@
           </a-button>
           <a-button type="primary" size="large" @click="stopPlay">
             <template #icon>
-              <v-icon :name="playStatus === 'play' ? 'icon-07zanting' : 'icon-bofang'" />
+              <v-icon v-if="!loading"
+                :name="playStatus === 'play' ? 'icon-07zanting' : 'icon-bofang'"
+              />
+              <v-icon v-else
+                name="icon-loading1"
+                loading
+              />
             </template>
           </a-button>
           <a-button @click="onNext">
@@ -26,9 +32,6 @@
             </template>
           </a-button>
         </a-space>
-
-
-
       </div>
       <div>
         <a-button @click="showPlayListHandle">
@@ -38,16 +41,34 @@
         </a-button>
       </div>
     </div>
-    <audio v-if="music && music.audio" ref="audioRef" :src="music.audio" controls @canplay="onCanPlay"
-      @timeupdate="onTimeUpdate" @ended="onEnded" style="display: none" @play="onPlay" @pause="onPause"></audio>
+    <audio
+      v-if="music && playUrl"
+      ref="audioRef"
+      :src="playUrl"
+      controls
+      @canplay="onCanPlay"
+      @timeupdate="onTimeUpdate"
+      @ended="onEnded"
+      style="display: none"
+      @play="onPlay"
+      @pause="onPause"
+      @error="onError"
+    ></audio>
   </div>
-  <a-drawer :headerStyle="headerStyle" :closable="false" height="100vh" :title="music ? music.title : ''"
-    placement="bottom" :open="showDetail" @close="onCloseDetail">
+  <a-drawer
+    :headerStyle="headerStyle"
+    :closable="false"
+    height="100vh"
+    :title="music ? music.title : ''"
+    placement="bottom"
+    :open="showDetail"
+    @close="onCloseDetail"
+  >
     <template #extra>
       <a-space class="action">
         <a-button type="primary" size="small" @click="onCloseDetail">
           <template #icon>
-            <v-icon name="icon-zuixiaohua" />
+            <v-icon name="icon-xiangxiazhankai" />
           </template>
         </a-button>
         <a-button size="small" @click="winMin">
@@ -69,19 +90,28 @@
     </template>
     <div class="background" :style="backgroundStyle"></div>
   </a-drawer>
-  <a-drawer title="播放列表" placement="right" :headerStyle="playListHeaderStyle" :open="showPlayList"
-    @close="onClosePlayList">
+  <a-drawer
+    title="播放列表"
+    placement="right"
+    :headerStyle="playListHeaderStyle"
+    :open="showPlayList"
+    @close="onClosePlayList"
+  >
     <a-list item-layout="horizontal" :data-source="playList">
       <template #renderItem="{ item }">
         <a-list-item>
-          <a-list-item-meta style="cursor: pointer;" @click="changePlay(item)"
-            >
+          <a-list-item-meta style="cursor: pointer" @click="changePlay(item)">
             <template #title>
               <a class="one-line block">{{ item.title }}</a>
             </template>
             <template #avatar>
-              <a-image style="border-radius: 4px;" :width="80" :height="45" :preview="false"
-                :src="item.pic" />
+              <a-image
+                style="border-radius: 4px"
+                :width="80"
+                :height="45"
+                :preview="false"
+                :src="item.pic"
+              />
             </template>
             <template #description>
               <div>{{ item.timelength }}</div>
@@ -90,75 +120,87 @@
         </a-list-item>
       </template>
     </a-list>
-
   </a-drawer>
 </template>
 <script setup lang="ts">
 import { useStore } from "../store/index";
+import { getVideoDetail } from "../api/music";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 const music = computed(() => store.getMusic);
 const playStatus = computed(() => store.playStatus);
 const nextPlay = computed(() => store.nextPlay);
 const audioRef = ref();
-const playList = computed(() => store.getMusicList)
+const playList = computed(() => store.getMusicList);
 const onCanPlay = () => {
+  loading.value=false
   if (playStatus.value === "play") audioRef.value && audioRef.value.play();
 };
-const showPlayList = ref(false)
+const showPlayList = ref(false);
+const loading=ref(false)
 const showPlayListHandle = () => {
   showPlayList.value = true;
-}
-
+};
+onMounted(() => {
+  if (music.value && music.value.cid) getPlayUrl(music.value);
+});
 const onClosePlayList = () => {
   showPlayList.value = false;
-}
-const changePlay=(item:any)=>{
-  store.changePlayById(item.aid)
-  store.setPlayStatus('play')
-}
+};
+const changePlay = (item: any) => {
+  store.changePlayById(item.aid);
+  store.setPlayStatus("play");
+};
 const headerStyle = {
-
   position: "relative",
-  zIndex: 9999
-}
+  zIndex: 9999,
+};
 const playListHeaderStyle = {
-  '-webkit-app-region': 'no-drag'
-}
+  "-webkit-app-region": "no-drag",
+};
 const backgroundStyle = computed(() => {
   return {
-    backgroundImage: `url(${music.value.pic})`
-  }
-})
+    backgroundImage: `url(${music.value.pic})`,
+  };
+});
 const showDetail = ref<boolean>(false);
 const onShowDetail = () => {
-  showDetail.value = true
-}
+  showDetail.value = true;
+};
 const onCloseDetail = () => {
-  showDetail.value = false
-}
+  showDetail.value = false;
+};
 const onPlay = () => {
-  store.setPlayStatus('play')
-}
+  store.setPlayStatus("play");
+};
 
 const onPause = () => {
   console.log("播放暂停");
   if (!audioRef.value) return;
-  if (!(audioRef.value.ended && nextPlay.value))
-    store.setPlayStatus('pause')
+  if (!(audioRef.value.ended && nextPlay.value)) store.setPlayStatus("pause");
+};
+const onError=()=>{
+  loading.value=false
+  console.log("播放错误");
+  if(nextPlay.value){
+    store.next();
+  }else{
+    store.setPlayStatus("pause");
+  }
 }
 const onPre = () => {
-  onPlay()
+  onPlay();
   store.prev();
 };
 const onNext = () => {
-  onPlay()
+  onPlay();
   store.next();
 };
 const onMouseUp = (event: any) => {
-  audioRef.value.currentTime = event.offsetX / event?.target?.offsetWidth * audioRef.value.duration
-  playStatus.value === 'play'
+  audioRef.value.currentTime =
+    (event.offsetX / event?.target?.offsetWidth) * audioRef.value.duration;
+  playStatus.value === "play";
 };
 const playInfo = ref({
   duration: 0,
@@ -176,12 +218,18 @@ const onTimeUpdate = () => {
   }
 };
 const stopPlay = () => {
-  if (playStatus.value === 'play') {
-    audioRef.value.pause()
-  } else {
-    audioRef.value.play()
+  if(!music.value) return;
+  if(!playUrl.value){
+    getPlayUrl(music.value);
+    store.setPlayStatus("play");
+    return;
   }
-}
+  if (playStatus.value === "play") {
+    audioRef.value.pause();
+  } else {
+    audioRef.value.play();
+  }
+};
 const onEnded = () => {
   console.log("播放结束");
   console.log(nextPlay.value, playStatus.value);
@@ -196,20 +244,43 @@ watch(
   () => store.playStatus,
   (newValue) => {
     if (!audioRef.value) return;
-    if (newValue === 'play' && audioRef.value.paused) {
-      audioRef.value.play()
+    if (newValue === "play" && audioRef.value.paused) {
+      audioRef.value.play();
     }
   }
 );
+const playUrl = ref("");
+watch(
+  () => store.getMusic,
+  (newValue, oldValue) => {
+    if (!newValue) return;
+    if (oldValue && newValue.cid === oldValue.cid) return;
+    getPlayUrl(newValue);
+  }
+);
+const getPlayUrl = (newValue: any) => {
+  loading.value=true
+  getVideoDetail({
+    aid: newValue.aid,
+    bvid: newValue.bvid,
+    cid: newValue.cid,
+    fnval: "16",
+  }).then((res) => {
+    playUrl.value = res.data.data.dash.audio[0].baseUrl;
+  },()=>{
+    console.log("播放失败")
+    loading.value=false;
+  })
+};
 const fullScreen = () => {
-  window.ipcRenderer.send("window-max")
-}
+  window.ipcRenderer.send("window-max");
+};
 const close = () => {
-  window.ipcRenderer.send("close")
-}
+  window.ipcRenderer.send("close");
+};
 const winMin = () => {
-  window.ipcRenderer.send("window-min")
-}
+  window.ipcRenderer.send("window-min");
+};
 </script>
 <style scoped lang="scss">
 .music-ctrl {
@@ -255,15 +326,13 @@ const winMin = () => {
     .ctrl {
       display: flex;
       align-items: center;
-
-      
     }
 
     .pic-box {
       height: 80px;
       width: calc(80px * calc(16 / 9));
       user-select: none;
-      .pic{
+      .pic {
         width: 100%;
         height: 100%;
         border-radius: 4px;
@@ -281,7 +350,7 @@ const winMin = () => {
         cursor: pointer;
 
         &:hover {
-          box-shadow: 0px 0px 12px rgba(0, 0, 0, .12);
+          box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
         }
       }
     }
@@ -304,7 +373,7 @@ const winMin = () => {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: rgba($color: #fff, $alpha: 0.4);
+    background-color: var(--back-color);
   }
 }
 

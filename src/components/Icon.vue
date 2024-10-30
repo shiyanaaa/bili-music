@@ -1,14 +1,17 @@
 <template>
-    <svg class="icon" aria-hidden="true">
+  <svg class="icon" :class="{loading}" aria-hidden="true">
     <use :xlink:href="`#${name}`"></use>
-</svg>
+  </svg>
 </template>
 <script lang="ts" setup>
 defineProps({
-    name:{
-        type:String,
-        default:""
-    }
-})
-
+  name: {
+    type: String,
+    default: "",
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+});
 </script>

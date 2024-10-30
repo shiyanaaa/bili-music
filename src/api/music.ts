@@ -6,8 +6,13 @@ export const getDetail = (params:any) => {
     })
   }
 export const getVideoDetail = (params:any) => {
-  console.log(params)
   return http.get(`https://api.bilibili.com/x/player/wbi/playurl`,{
+    headers:{isWBI:true},
+    params
+  })
+}
+export const getVideoDetailInfo = (params:any) => {
+  return http.get(`https://api.bilibili.com/x/web-interface/view/detail`,{
     headers:{isWBI:true},
     params
   })
