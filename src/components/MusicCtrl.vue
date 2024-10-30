@@ -4,6 +4,9 @@
     <div class="ctrl-box">
       <div class="pic-box" @click="onShowDetail">
         <img v-if="music" :src="music.pic" alt="" />
+        <div v-else class="pic">
+          <v-icon name="icon-music"></v-icon>
+        </div>
       </div>
       <div class="ctrl">
         <a-space>
@@ -296,7 +299,16 @@ const winMin = () => {
       height: 80px;
       width: calc(80px * calc(16 / 9));
       user-select: none;
-
+      .pic{
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        box-shadow: 0px 0px 12px rgba(0, 0, 0, .12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+      }
       img {
         width: 100%;
         height: 100%;

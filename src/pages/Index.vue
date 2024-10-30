@@ -1,36 +1,48 @@
 <template>
   <div class="index">
-    <a-auto-complete
-      v-model:value="keyword"
-      placeholder="搜索"
-      class="search"
-      @search="onSearch"
-      @change="onSearchChange"
-      :options="suggestList"
-    />
+    <a-input-group compact class="search-box">
+      <a-auto-complete
+        v-model:value="keyword"
+        placeholder="搜索"
+        @select="onSearch"
+        @change="onSearchChange"
+        @pressEnter="onSearch"
+        :options="suggestList"
+        class="search-input"
+        :defaultActiveFirstOption="false"
+        @keydown.enter="onSearch"
+      />
+      <a-button @click="onSearch">
+        <v-icon #icon name="icon-sousuo" />
+      </a-button>
+    </a-input-group>
+
     <a-radio-group v-model:value="type" name="radioGroup">
       <a-radio value="1">歌曲</a-radio>
       <a-radio value="2">歌单</a-radio>
     </a-radio-group>
-    <a-tabs @change="getHotMusicList" v-model:activeKey="activeKey" style="width: 100%; padding: 0 10px">
+    <a-tabs
+      @change="getHotMusicList"
+      v-model:activeKey="activeKey"
+      style="width: 100%; padding: 0 10px"
+    >
       <a-tab-pane :key="item.id" :tab="item.name" v-for="item in musicTypeList">
-        <MusicList @play="onPlay" :list="musicList[item.id]" />
+        <MusicList  :list="musicList[item.id]" />
       </a-tab-pane>
     </a-tabs>
   </div>
 
   <!-- <div @click="getMusicDetail">123</div> -->
-  
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { getDetail, getVideoDetail, getHotListByRid } from "../api/music";
-import { getEnc } from "../api/wbi";
+import { getHotListByRid } from "../api/music";
 import MusicList from "../components/MusicList.vue";
-import { useStore } from '../store/index'
 import { getSuggest } from "../api/search";
+import { useRouter } from "vue-router";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
-const store = useStore()
+
+const router=useRouter()
 const musicTypeList = ref([
   { name: "原创音乐", id: "28" },
   { name: "音乐现场", id: "29" },
@@ -48,60 +60,24 @@ const musicTypeList = ref([
 const activeKey = ref("28");
 const keyword = ref("");
 const type = ref("1");
-const onSearch=()=>{
-
-}
-const suggestList= ref([]);
-const onSearchChange=()=>{
+const onSearch = () => {
+  console.log("search",keyword.value)
+  router.push(`/search?keyword=${keyword.value}`)
+};
+const suggestList = ref([]);
+const onSearchChange = () => {
   getSuggest(keyword.value).then((res) => {
     console.log(res.data);
-    suggestList.value=res.data.result.tag    ;
+    suggestList.value = res.data.result.tag;
   });
-}
+};
 onMounted(() => {
   getHotMusicList();
 });
 const musicList = ref<any>({});
 
-const onPlay=(item:any) => {
-    getDetail({
-        aid:item.aid,
-        bvid:item.bvid
-    }).then((res) => {
-        const mainData= res.data.data
-    getEnc({
-      avid: item.aid,
-      bvid:item.bvid,
-      cid: res.data.data.cid,
-      fnval: "16",
-    }).then((params) => {
-      getVideoDetail(params as string).then((res) => {
-        store.push({
-            ...mainData,
-            audio: res.data.data.dash.audio[0].baseUrl,
-            timelength:secondsToHHMMSS(res.data.data.timelength)
-        })
-        store.setPlayStatus('play')
-      });
-    });
-  });
-};
-const secondsToHHMMSS=(seconds: number): string=> {
-  seconds=seconds/1000
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
 
-  return [
-    padZero(hours),
-    padZero(minutes),
-    padZero(secs)
-  ].join(':');
-}
 
-const padZero=(num: number): string=> {
-  return num.toString().padStart(2, '0');
-}
 const getHotMusicList = () => {
   let id = activeKey.value;
   if (!musicList.value[id])
@@ -117,10 +93,15 @@ const getHotMusicList = () => {
   align-items: center;
   height: 100%;
   overflow-y: auto;
-  .search {
+  .search-box {
     margin: 10px 0;
     max-width: 500px;
     width: 90%;
+    display: flex;
+    .search-input{
+      flex: 1;
+      min-width: 0;
+    }
   }
 }
 </style>

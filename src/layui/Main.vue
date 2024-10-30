@@ -1,29 +1,34 @@
 <script setup lang="ts">
-import NavTop from '../components/NavTop.vue'
-import MusicCtrl from '../components/MusicCtrl.vue'
+import NavTop from "../components/NavTop.vue";
+import MusicCtrl from "../components/MusicCtrl.vue";
 </script>
 
 <template>
   <div class="container">
     <NavTop />
     <div class="page">
-        <router-view />
+      <router-view v-slot="{ Component }">
+        <transition name="fade">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </transition>
+      </router-view>
     </div>
     <MusicCtrl />
   </div>
 </template>
 
 <style scoped lang="scss">
-.container{
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 100px;
+.container {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 100px;
+  flex: 1;
+  min-height: 0;
+  .page {
     flex: 1;
     min-height: 0;
-    .page{
-        flex: 1;
-        min-height: 0;
-    }
-    
+  }
 }
 </style>

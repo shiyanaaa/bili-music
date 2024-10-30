@@ -30,7 +30,6 @@ function createWindow() {
   }
   win.setMenu(null);
   win.webContents.on("before-input-event", (event, input) => {
-    console.log(input.key);
     if (input.key === "F12") {
       event.preventDefault();
       if (win == null ? void 0 : win.webContents.isDevToolsOpened()) {
@@ -55,7 +54,24 @@ function createWindow() {
   });
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
-      callback({ requestHeaders: { ...details.requestHeaders, cookies: details.requestHeaders.authorization, referer: "http://www.bilibili.com/" } });
+      if (details.url.includes("bilibili")) {
+        callback({
+          requestHeaders: {
+            ...details.requestHeaders,
+            Cookie: details.requestHeaders.authorization,
+            referer: "http://www.bilibili.com/"
+          }
+        });
+      } else if (details.url.includes("hdslb") || details.url.includes(".m4s") || details.url.includes("bili")) {
+        callback({
+          requestHeaders: {
+            referer: "http://www.bilibili.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+          }
+        });
+      } else {
+        callback({});
+      }
     }
   );
   win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
@@ -63,6 +79,10 @@ function createWindow() {
     if (details.responseHeaders && details.responseHeaders["set-cookie"]) {
       details.responseHeaders["set-cookie"].map((item) => {
         cookies += item.split(";")[0] + ";";
+        const [name, value] = item.split(";")[0].split("=");
+        console.log(name, value);
+        const cookie = { url: "https://api.bilibili.com", name, value };
+        electron.session.defaultSession.cookies.set(cookie);
       });
     }
     callback({
@@ -73,7 +93,7 @@ function createWindow() {
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
         ...details.responseHeaders,
-        Authorization: cookies
+        authorization: cookies
       }
     });
   });

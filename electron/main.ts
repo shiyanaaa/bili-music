@@ -1,8 +1,7 @@
-import { app, BrowserWindow, ipcMain,  } from "electron";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 // import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-
 // const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,10 +32,9 @@ function createWindow() {
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
-      webSecurity:false
+      webSecurity: false,
     },
     frame: false,
-    
   });
 
   // Test active push message to Renderer-process.
@@ -52,19 +50,18 @@ function createWindow() {
   }
   win.setMenu(null);
   win.webContents.on("before-input-event", (event, input) => {
-    console.log(input.key);
-    if(input.key==="F12"){
+    if (input.key === "F12") {
       event.preventDefault();
       // 判断控制台是否已经开启
-      if(win?.webContents.isDevToolsOpened()){
+      if (win?.webContents.isDevToolsOpened()) {
         win?.webContents.closeDevTools();
-      }else{
+      } else {
         win?.webContents.openDevTools();
       }
     }
     // win.webContents.openDevTools();
-  })
-  
+  });
+
   ipcMain.on("window-max", () => {
     if (win?.isMaximized()) {
       win?.restore();
@@ -80,7 +77,28 @@ function createWindow() {
   });
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
-      callback({ requestHeaders: {  ...details.requestHeaders,cookies:details.requestHeaders.authorization,referer:'http://www.bilibili.com/' } });
+      if (details.url.includes("bilibili")) {
+        callback({
+          requestHeaders: {
+            ...details.requestHeaders,
+            Cookie: details.requestHeaders.authorization,
+            referer: "http://www.bilibili.com/",
+          },
+        });
+      } else if (
+        details.url.includes("hdslb") ||
+        details.url.includes(".m4s") ||
+        details.url.includes("bili")
+      ) {
+        callback({
+          requestHeaders: {
+            referer: "http://www.bilibili.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+          },
+        });
+      } else {
+        callback({});
+      }
     }
   );
 
@@ -89,24 +107,25 @@ function createWindow() {
     if (details.responseHeaders && details.responseHeaders["set-cookie"]) {
       details.responseHeaders["set-cookie"].map((item) => {
         cookies += item.split(";")[0] + ";";
+
+        const [name, value] = item.split(";")[0].split("=");
+        console.log(name, value);
+        const cookie = { url: "https://api.bilibili.com", name, value };
+        session.defaultSession.cookies.set(cookie);
       });
     }
     callback({
       responseHeaders: {
         "Access-Control-Allow-Origin": ["*"],
-        "Access-Control-Allow-Headers":"authorization",
-        'Access-Control-Expose-Headers': 'Authorization',
-        'Access-Control-Allow-Credentials': 'true',
+        "Access-Control-Allow-Headers": "authorization",
+        "Access-Control-Expose-Headers": "Authorization",
+        "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
         ...details.responseHeaders,
-        Authorization:cookies,
+        authorization: cookies,
       },
-      
     });
   });
-  
-
-
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common

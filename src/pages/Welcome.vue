@@ -4,6 +4,7 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 onMounted(() => {
+    localStorage.removeItem("authorization")
     getToken().then(res => {
         localStorage.setItem("authorization", res.headers.authorization)
         router.push("/home")

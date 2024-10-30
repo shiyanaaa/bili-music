@@ -7,7 +7,10 @@ const routes = [
   {
     path: "/main",
     component: () => import("../layui/Main.vue"),
-    children: [{ path: "/home", component: HomeView }],
+    children: [
+      { path: "/home", component: HomeView },
+      { name:"搜索",path: "/search", component: () => import("../pages/Search.vue") },
+    ],
   },
 ];
 

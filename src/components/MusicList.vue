@@ -9,21 +9,53 @@
       <div class="musicItem-img">
         <img :src="item.pic" alt="" />
       </div>
-      <div class="musicItem-title">
-        {{ item.title }}
+      <div class="musicItem-title" v-html="item.title">
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-
+import { getDetail, getVideoDetail } from "../api/music";
+import { useStore } from "../store/index";
+// 可以在组件中的任意位置访问 `store` 变量 ✨
+const store = useStore();
 const emit = defineEmits(["play"]);
 const props=defineProps({
   list: { type: Array<any>, default: () => []  },
 });
-const onPlay = (item:any) => {
-  emit("play", item);
+const onPlay = (item: any) => {
+  getDetail({
+    aid: item.aid,
+    bvid: item.bvid,
+  }).then((res) => {
+    const mainData = res.data.data;
+    getVideoDetail({
+      avid: item.aid,
+      bvid: item.bvid,
+      cid: res.data.data.cid,
+      fnval: "16",
+    }).then((res) => {
+        store.push({
+          ...mainData,
+          audio: res.data.data.dash.audio[0].baseUrl,
+          timelength: secondsToHHMMSS(res.data.data.timelength),
+        });
+        store.setPlayStatus("play");
+      });
+  });
+};
+const secondsToHHMMSS = (seconds: number): string => {
+  seconds = seconds / 1000;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  return [padZero(hours), padZero(minutes), padZero(secs)].join(":");
+};
+
+const padZero = (num: number): string => {
+  return num.toString().padStart(2, "0");
 };
 </script>
 
@@ -43,6 +75,7 @@ $num: (
   flex-wrap: wrap;
   .musicItem {
     margin-right: 10px;
+    margin-bottom: 5px;
     @each $name, $glyph in $num {
       @media (min-width: #{$name}) {
         width: calc(calc(100% - calc(10px * calc(#{$glyph} - 1))) / #{$glyph} );
@@ -74,11 +107,15 @@ $num: (
       }
     }
     .musicItem-title {
-      padding: 5px 0;
+      margin: 8px 0;
       @include show_line(2);
       cursor: pointer;
+      font-size: 14px;
       &:hover{
         color: #f16c8d;
+      }
+      :deep(.keyword){
+        font-style:unset;
       }
     }
   }

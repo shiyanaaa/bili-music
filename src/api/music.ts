@@ -5,8 +5,12 @@ export const getDetail = (params:any) => {
         params
     })
   }
-export const getVideoDetail = (params:string) => {
-  return http.get(`https://api.bilibili.com/x/player/wbi/playurl?${params}`)
+export const getVideoDetail = (params:any) => {
+  console.log(params)
+  return http.get(`https://api.bilibili.com/x/player/wbi/playurl`,{
+    headers:{isWBI:true},
+    params
+  })
 }
 export const getHotListByRid= (rid:string)=>{
   return http.get(`https://api.bilibili.com/x/web-interface/ranking/region`,{

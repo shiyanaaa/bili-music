@@ -1,13 +1,26 @@
 import axios from "axios";
-
+import type { InternalAxiosRequestConfig } from "axios";
+import { getEnc } from "./wbi";
 const instance = axios.create({
   timeout: 5000,
+  withCredentials: true,
 });
 instance.interceptors.request.use((config) => {
-    if(localStorage.getItem("authorization")){
-        config.headers.authorization=localStorage.getItem("authorization")
+  return new Promise<InternalAxiosRequestConfig<any>>((resolve, reject) => {
+    if (localStorage.getItem("authorization")) {
+      config.headers.authorization = localStorage.getItem("authorization");
     }
-    return config;
+    if (config.headers.isWBI) {
+      getEnc(config.params).then((res) => {
+        config.params={}
+        config.url+="?"+res
+        resolve(config);
+      });
+    }else{
+      resolve(config);
+    }
+    
+  });
 });
 instance.interceptors.response.use(
   (response) => {

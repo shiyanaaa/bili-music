@@ -9,3 +9,9 @@ export const getSuggest = (term: string) => {
     }
   })
 }
+export const getSearchByType = (params:any) => {
+  return http.get('https://api.bilibili.com/x/web-interface/wbi/search/type',{
+    params,
+    headers:{isWBI:true}
+  })
+}
