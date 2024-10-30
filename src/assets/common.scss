@@ -3,4 +3,12 @@
 :root{
     @include init();
     --color-background:var(--vi-color-light-info-9);
+    --color:var(--vi-color-dark-info-9);
+    color: var(--color);
+    --shadow:0px 0px 12px rgba(0, 0, 0, .12);
+    &.dark{
+        --color-background:var(--vi-color-dark-info-9);
+        --color:var(--vi-color-light-info-9);
+        --shadow:0px 0px 12px rgba(255,255,255, .12)
+    }
 }

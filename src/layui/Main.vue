@@ -7,13 +7,7 @@ import MusicCtrl from "../components/MusicCtrl.vue";
   <div class="container">
     <NavTop />
     <div class="page">
-      <router-view v-slot="{ Component }">
-        <transition name="fade">
-          <keep-alive>
-            <component :is="Component" />
-          </keep-alive>
-        </transition>
-      </router-view>
+      <router-view />
     </div>
     <MusicCtrl />
   </div>

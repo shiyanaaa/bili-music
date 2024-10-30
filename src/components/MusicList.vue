@@ -9,8 +9,7 @@
       <div class="musicItem-img">
         <img :src="item.pic" alt="" />
       </div>
-      <div class="musicItem-title" v-html="item.title">
-      </div>
+      <div class="musicItem-title" v-html="item.title"></div>
     </div>
   </div>
 </template>
@@ -21,8 +20,8 @@ import { useStore } from "../store/index";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
 const emit = defineEmits(["play"]);
-const props=defineProps({
-  list: { type: Array<any>, default: () => []  },
+const props = defineProps({
+  list: { type: Array<any>, default: () => [] },
 });
 const onPlay = (item: any) => {
   getDetail({
@@ -36,13 +35,13 @@ const onPlay = (item: any) => {
       cid: res.data.data.cid,
       fnval: "16",
     }).then((res) => {
-        store.push({
-          ...mainData,
-          audio: res.data.data.dash.audio[0].baseUrl,
-          timelength: secondsToHHMMSS(res.data.data.timelength),
-        });
-        store.setPlayStatus("play");
+      store.push({
+        ...mainData,
+        audio: res.data.data.dash.audio[0].baseUrl,
+        timelength: secondsToHHMMSS(res.data.data.timelength),
       });
+      store.setPlayStatus("play");
+    });
   });
 };
 const secondsToHHMMSS = (seconds: number): string => {
@@ -62,7 +61,7 @@ const padZero = (num: number): string => {
 <style scoped lang="scss">
 @import "../assets/mixin.scss";
 $num: (
-    "0px": 1,
+  "0px": 1,
   "400px": 2,
   "600px": 3,
   "992px": 4,
@@ -78,18 +77,17 @@ $num: (
     margin-bottom: 5px;
     @each $name, $glyph in $num {
       @media (min-width: #{$name}) {
-        width: calc(calc(100% - calc(10px * calc(#{$glyph} - 1))) / #{$glyph} );
-        
+        width: calc(calc(100% - calc(10px * calc(#{$glyph} - 1))) / #{$glyph});
+
         &:nth-child(#{$glyph}n) {
           margin-right: 0;
         }
-        &:not(:nth-child(#{$glyph}n)){
-            margin-right: 10px;
+        &:not(:nth-child(#{$glyph}n)) {
+          margin-right: 10px;
         }
       }
     }
     // width: calc(calc(100% - calc(10px * #{$num - 1})) / #{$num});
-    
 
     .musicItem-img {
       width: 100%;
@@ -111,11 +109,13 @@ $num: (
       @include show_line(2);
       cursor: pointer;
       font-size: 14px;
-      &:hover{
+      line-height: 1.2;
+      height: 2.4em;
+      &:hover {
         color: #f16c8d;
       }
-      :deep(.keyword){
-        font-style:unset;
+      :deep(.keyword) {
+        font-style: unset;
       }
     }
   }

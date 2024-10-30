@@ -256,43 +256,7 @@ const winMin = () => {
       display: flex;
       align-items: center;
 
-      .pre-next {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        background-color: rgba($color: #000000, $alpha: 0.05);
-        border-radius: 4px;
-        cursor: pointer;
-
-        &:hover {
-          background-color: rgba($color: #000000, $alpha: 0.1);
-        }
-      }
-
-      .play-pause {
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 30px;
-        background-color: rgba($color: #000000, $alpha: 0.05);
-        border-radius: 50%;
-        margin: 0 20px;
-        cursor: pointer;
-
-        &:hover {
-          background-color: rgba($color: #000000, $alpha: 0.1);
-        }
-
-        &.pause {
-          background-color: #f16c8d;
-          color: #fff;
-        }
-      }
+      
     }
 
     .pic-box {
@@ -303,7 +267,7 @@ const winMin = () => {
         width: 100%;
         height: 100%;
         border-radius: 4px;
-        box-shadow: 0px 0px 12px rgba(0, 0, 0, .12);
+        box-shadow: var(--shadow);
         display: flex;
         align-items: center;
         justify-content: center;

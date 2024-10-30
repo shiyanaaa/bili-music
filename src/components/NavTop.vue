@@ -14,6 +14,11 @@
 
     <div class="setting">
       <a-space>
+        <a-button size="small" @click="changeDark">
+          <template #icon>
+            <v-icon :name="isDarkVal?'icon-yueliang':'icon-taiyang'" />
+          </template>
+        </a-button>
         <a-button size="small" @click="winMin">
           <template #icon>
             <v-icon name="icon-zuixiaohua" />
@@ -34,14 +39,34 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref,inject, Ref  } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import { useToggle } from "@vueuse/shared";
+import { useDark } from "@vueuse/core";
+const isDarkVal = inject('isDark') as Ref<boolean>
+const setDark = inject('setDark') as Function
+const changeDark=()=>{
+  toggle()
+  setDark(!isDarkVal.value)
+}
+const isDark = useDark({
+  // 存储到localStorage/sessionStorage中的Key 根据自己的需求更改
+  storageKey: "useDarkKEY",
+  // 暗黑class名字
+  valueDark: "dark",
+  // 高亮class名字
+  valueLight: "light",
+});
+
+const toggle = useToggle(isDark);
+
 const route = useRoute();
 const router = useRouter();
 const showBack = computed(() => route.path !== "/home");
-const back=()=>{
+const back = () => {
   router.back();
-}
+};
 const fullScreen = () => {
   window.ipcRenderer.send("window-max");
 };
@@ -71,15 +96,15 @@ const winMin = () => {
     align-items: center;
     -webkit-app-region: no-drag;
   }
-  .top-left{
+  .top-left {
     display: flex;
     align-items: center;
     -webkit-app-region: no-drag;
-    .top-title{
+    .top-title {
       margin-left: 15px;
     }
   }
-  .back-btn{
+  .back-btn {
     margin-right: 8px;
   }
 }
