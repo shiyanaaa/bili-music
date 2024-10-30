@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { getDetail, getVideoDetail } from "../api/music";
+import { getDetail } from "../api/music";
 import { useRouter } from "vue-router";
 import { useStore } from "../store/index";
 const router=useRouter()
@@ -48,18 +48,18 @@ const onPlay = (item: any) => {
     store.setPlayStatus("play");
   });
 };
-const secondsToHHMMSS = (seconds: number): string => {
-  seconds = seconds / 1000;
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
+// const secondsToHHMMSS = (seconds: number): string => {
+//   seconds = seconds / 1000;
+//   const hours = Math.floor(seconds / 3600);
+//   const minutes = Math.floor((seconds % 3600) / 60);
+//   const secs = Math.floor(seconds % 60);
 
-  return [padZero(hours), padZero(minutes), padZero(secs)].join(":");
-};
+//   return [padZero(hours), padZero(minutes), padZero(secs)].join(":");
+// };
 
-const padZero = (num: number): string => {
-  return num.toString().padStart(2, "0");
-};
+// const padZero = (num: number): string => {
+//   return num.toString().padStart(2, "0");
+// };
 const toMusicDetail=(item:any)=>{
   router.push(`/detail?bvid=${item.bvid}`)
 }

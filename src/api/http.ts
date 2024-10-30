@@ -6,7 +6,7 @@ const instance = axios.create({
   withCredentials: true,
 });
 instance.interceptors.request.use((config) => {
-  return new Promise<InternalAxiosRequestConfig<any>>((resolve, reject) => {
+  return new Promise<InternalAxiosRequestConfig<any>>((resolve) => {
     if (localStorage.getItem("authorization")) {
       config.headers.authorization = localStorage.getItem("authorization");
     }

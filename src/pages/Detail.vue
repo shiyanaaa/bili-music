@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { getVideoDetailInfo, getVideoDetail } from "../api/music";
+import { getVideoDetailInfo } from "../api/music";
 import { useStore } from "../store/index";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
