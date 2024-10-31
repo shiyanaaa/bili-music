@@ -18,13 +18,11 @@
           </a-button>
           <a-button type="primary" size="large" @click="stopPlay">
             <template #icon>
-              <v-icon v-if="!loading"
+              <v-icon
+                v-if="!loading"
                 :name="playStatus === 'play' ? 'icon-07zanting' : 'icon-bofang'"
               />
-              <v-icon v-else
-                name="icon-loading1"
-                loading
-              />
+              <v-icon v-else name="icon-loading1" loading />
             </template>
           </a-button>
           <a-button @click="onNext">
@@ -90,6 +88,60 @@
       </a-space>
     </template>
     <div class="background" :style="backgroundStyle"></div>
+    <div class="main">
+      <div class="pan-box">
+        <div class="play-pan" :class="{ run: playStatus === 'play' }">
+          <img :src="music.pic" alt="" />
+        </div>
+      </div>
+      <div class="main-bottom">
+        <div class="slider" @mousedown="onSliderMouseDown" @mouseup="onSliderMouseDown">
+          <a-slider
+            v-model:value="sliderVal"
+            @afterChange="onSliderChange"
+          />
+        </div>
+        <div class="main-ctrl">
+          <div>
+            <a-button  @click="showPlayListHandle">
+              <template #icon>
+                <v-icon name="icon-liebiao" />
+              </template>
+            </a-button>
+          </div>
+          <a-space>
+            <a-button @click="onPre">
+              <template #icon>
+                <v-icon name="icon-shangyishou" />
+              </template>
+            </a-button>
+            <a-button type="primary" size="large" @click="stopPlay">
+              <template #icon>
+                <v-icon
+                  v-if="!loading"
+                  :name="
+                    playStatus === 'play' ? 'icon-07zanting' : 'icon-bofang'
+                  "
+                />
+                <v-icon v-else name="icon-loading1" loading />
+              </template>
+            </a-button>
+            <a-button @click="onNext">
+              <template #icon>
+                <v-icon name="icon-xiayishou" />
+              </template>
+            </a-button>
+          </a-space>
+          <div>
+            <a-button @click="showPlayListHandle">
+              <template #icon>
+                <v-icon name="icon-liebiao" />
+              </template>
+            </a-button>
+          </div>
+        </div>
+      </div>
+    </div>
   </a-drawer>
   <a-drawer
     title="播放列表"
@@ -135,11 +187,24 @@ const nextPlay = computed(() => store.nextPlay);
 const audioRef = ref();
 const playList = computed(() => store.getMusicList);
 const onCanPlay = () => {
-  loading.value=false
+  loading.value = false;
   if (playStatus.value === "play") audioRef.value && audioRef.value.play();
 };
+const sliderVal = ref(0);
+const changeFlag = ref(false);
+const onSliderMouseDown = () => {
+  console.log("开始拖动");
+  changeFlag.value = true;
+};
+const onSliderMouseUp = () => {
+  changeFlag.value = false;
+};
+const onSliderChange = (val: number) => {
+  changeFlag.value = false;
+  audioRef.value.currentTime = (val / 100) * audioRef.value.duration;
+};
 const showPlayList = ref(false);
-const loading=ref(false)
+const loading = ref(false);
 const showPlayListHandle = () => {
   showPlayList.value = true;
 };
@@ -181,15 +246,15 @@ const onPause = () => {
   if (!audioRef.value) return;
   if (!(audioRef.value.ended && nextPlay.value)) store.setPlayStatus("pause");
 };
-const onError=()=>{
-  loading.value=false
+const onError = () => {
+  loading.value = false;
   console.log("播放错误");
-  if(nextPlay.value){
+  if (nextPlay.value) {
     store.next();
-  }else{
+  } else {
     store.setPlayStatus("pause");
   }
-}
+};
 const onPre = () => {
   onPlay();
   store.prev();
@@ -201,7 +266,6 @@ const onNext = () => {
 const onMouseUp = (event: any) => {
   audioRef.value.currentTime =
     (event.offsetX / event?.target?.offsetWidth) * audioRef.value.duration;
-  playStatus.value === "play";
 };
 const playInfo = ref({
   duration: 0,
@@ -216,11 +280,12 @@ const onTimeUpdate = () => {
       currentTime: audioRef.value.currentTime,
       playLine: (audioRef.value.currentTime / audioRef.value.duration) * 100,
     };
+    if (!changeFlag.value) sliderVal.value = playInfo.value.playLine;
   }
 };
 const stopPlay = () => {
-  if(!music.value) return;
-  if(!playUrl.value){
+  if (!music.value) return;
+  if (!playUrl.value) {
     getPlayUrl(music.value);
     store.setPlayStatus("play");
     return;
@@ -260,18 +325,21 @@ watch(
   }
 );
 const getPlayUrl = (newValue: any) => {
-  loading.value=true
+  loading.value = true;
   getVideoDetail({
     aid: newValue.aid,
     bvid: newValue.bvid,
     cid: newValue.cid,
     fnval: "16",
-  }).then((res) => {
-    playUrl.value = res.data.data.dash.audio[0].baseUrl;
-  },()=>{
-    console.log("播放失败")
-    loading.value=false;
-  })
+  }).then(
+    (res) => {
+      playUrl.value = res.data.data.dash.audio[0].baseUrl;
+    },
+    () => {
+      console.log("播放失败");
+      loading.value = false;
+    }
+  );
 };
 const fullScreen = () => {
   window.ipcRenderer.send("window-max");
@@ -334,7 +402,7 @@ const winMin = () => {
       width: calc(80px * calc(16 / 9));
       display: flex;
       user-select: none;
-      .title{
+      .title {
         width: 300px;
         padding: 10px;
         flex-shrink: 0;
@@ -381,6 +449,56 @@ const winMin = () => {
     left: 0;
     top: 0;
     background-color: var(--back-color);
+  }
+}
+.main {
+  position: relative;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  .pan-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .play-pan {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 15px solid #000;
+      position: relative;
+      @media (min-width: 375px) {
+        width: 250px;
+        height: 250px;
+        padding-bottom: 0;
+      }
+      @media (min-width: 500px) {
+        width: 300px;
+        height: 300px;
+        padding-bottom: 0;
+      }
+      &.run {
+        animation: loading 10s linear infinite;
+      }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    }
+  }
+  .main-bottom {
+    width: 100%;
+    .main-ctrl {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   }
 }
 

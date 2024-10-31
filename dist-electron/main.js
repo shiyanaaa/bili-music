@@ -13,6 +13,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 let win;
 function createWindow() {
   win = new electron.BrowserWindow({
+    minWidth: 375,
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname$1, "preload.mjs"),
