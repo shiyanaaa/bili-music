@@ -7,6 +7,7 @@
         <div v-else class="pic">
           <v-icon name="icon-music"></v-icon>
         </div>
+        <div class="title">{{ music.title }}</div>
       </div>
       <div class="ctrl">
         <a-space>
@@ -331,7 +332,13 @@ const winMin = () => {
     .pic-box {
       height: 80px;
       width: calc(80px * calc(16 / 9));
+      display: flex;
       user-select: none;
+      .title{
+        width: 300px;
+        padding: 10px;
+        flex-shrink: 0;
+      }
       .pic {
         width: 100%;
         height: 100%;

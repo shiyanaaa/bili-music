@@ -1,1 +1,115 @@
-"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const s=require("electron"),R=require("node:url"),n=require("node:path");var i=typeof document<"u"?document.currentScript:null;const u=n.dirname(R.fileURLToPath(typeof document>"u"?require("url").pathToFileURL(__filename).href:i&&i.tagName.toUpperCase()==="SCRIPT"&&i.src||new URL("main.js",document.baseURI).href));process.env.APP_ROOT=n.join(u,"..");const t=process.env.VITE_DEV_SERVER_URL,b=n.join(process.env.APP_ROOT,"dist-electron"),l=n.join(process.env.APP_ROOT,"dist");process.env.VITE_PUBLIC=t?n.join(process.env.APP_ROOT,"public"):l;let e;function f(){e=new s.BrowserWindow({icon:n.join(process.env.VITE_PUBLIC,"electron-vite.svg"),webPreferences:{preload:n.join(u,"preload.mjs"),webSecurity:!1},frame:!1}),e.webContents.on("did-finish-load",()=>{e==null||e.webContents.send("main-process-message",new Date().toLocaleString())}),t?e.loadURL(t):e.loadFile(n.join(l,"index.html")),e.setMenu(null),e.webContents.on("before-input-event",(o,r)=>{r.key==="F12"&&(o.preventDefault(),e!=null&&e.webContents.isDevToolsOpened()?e==null||e.webContents.closeDevTools():e==null||e.webContents.openDevTools())}),s.ipcMain.on("window-max",()=>{e!=null&&e.isMaximized()?e==null||e.restore():e==null||e.maximize()}),s.ipcMain.on("close",()=>{e==null||e.close()}),s.ipcMain.on("window-min",()=>{e==null||e.minimize()}),e.webContents.session.webRequest.onBeforeSendHeaders((o,r)=>{o.url.includes("bilibili")?r({requestHeaders:{...o.requestHeaders,Cookie:o.requestHeaders.authorization,referer:"http://www.bilibili.com/"}}):o.url.includes("hdslb")||o.url.includes(".m4s")||o.url.includes("bili")?r({requestHeaders:{referer:"http://www.bilibili.com/","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"}}):r({})}),e.webContents.session.webRequest.onHeadersReceived((o,r)=>{let c="";o.responseHeaders&&o.responseHeaders["set-cookie"]&&o.responseHeaders["set-cookie"].map(a=>{c+=a.split(";")[0]+";";const[d,p]=a.split(";")[0].split("=");console.log(d,p);const m={url:"https://api.bilibili.com",name:d,value:p};s.session.defaultSession.cookies.set(m)}),r({responseHeaders:{"Access-Control-Allow-Origin":["*"],"Access-Control-Allow-Headers":"authorization","Access-Control-Expose-Headers":"Authorization","Access-Control-Allow-Credentials":"true","Access-Control-Allow-Methods":"POST,GET,OPTIONS",...o.responseHeaders,authorization:c}})})}s.app.on("window-all-closed",()=>{process.platform!=="darwin"&&(s.app.quit(),e=null)});s.app.on("activate",()=>{s.BrowserWindow.getAllWindows().length===0&&f()});s.app.whenReady().then(f);exports.MAIN_DIST=b;exports.RENDERER_DIST=l;exports.VITE_DEV_SERVER_URL=t;
+"use strict";
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+const electron = require("electron");
+const node_url = require("node:url");
+const path = require("node:path");
+var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
+const __dirname$1 = path.dirname(node_url.fileURLToPath(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("main.js", document.baseURI).href));
+process.env.APP_ROOT = path.join(__dirname$1, "..");
+const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
+const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
+const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+let win;
+function createWindow() {
+  win = new electron.BrowserWindow({
+    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    webPreferences: {
+      preload: path.join(__dirname$1, "preload.mjs"),
+      webSecurity: false
+    },
+    frame: false
+  });
+  win.webContents.on("did-finish-load", () => {
+    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  });
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(path.join(RENDERER_DIST, "index.html"));
+  }
+  win.setMenu(null);
+  win.webContents.on("before-input-event", (event, input) => {
+    if (input.key === "F12") {
+      event.preventDefault();
+      if (win == null ? void 0 : win.webContents.isDevToolsOpened()) {
+        win == null ? void 0 : win.webContents.closeDevTools();
+      } else {
+        win == null ? void 0 : win.webContents.openDevTools();
+      }
+    }
+  });
+  electron.ipcMain.on("window-max", () => {
+    if (win == null ? void 0 : win.isMaximized()) {
+      win == null ? void 0 : win.restore();
+    } else {
+      win == null ? void 0 : win.maximize();
+    }
+  });
+  electron.ipcMain.on("close", () => {
+    win == null ? void 0 : win.close();
+  });
+  electron.ipcMain.on("window-min", () => {
+    win == null ? void 0 : win.minimize();
+  });
+  win.webContents.session.webRequest.onBeforeSendHeaders(
+    (details, callback) => {
+      if (details.url.includes("bilibili")) {
+        callback({
+          requestHeaders: {
+            ...details.requestHeaders,
+            Cookie: details.requestHeaders.authorization,
+            referer: "http://www.bilibili.com/"
+          }
+        });
+      } else if (details.url.includes("hdslb") || details.url.includes(".m4s") || details.url.includes("bili")) {
+        callback({
+          requestHeaders: {
+            referer: "http://www.bilibili.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+          }
+        });
+      } else {
+        callback({});
+      }
+    }
+  );
+  win.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    let cookies = "";
+    if (details.responseHeaders && details.responseHeaders["set-cookie"]) {
+      details.responseHeaders["set-cookie"].map((item) => {
+        cookies += item.split(";")[0] + ";";
+        const [name, value] = item.split(";")[0].split("=");
+        console.log(name, value);
+        const cookie = { url: "https://api.bilibili.com", name, value };
+        electron.session.defaultSession.cookies.set(cookie);
+      });
+    }
+    callback({
+      responseHeaders: {
+        "Access-Control-Allow-Origin": ["*"],
+        "Access-Control-Allow-Headers": "authorization",
+        "Access-Control-Expose-Headers": "Authorization",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
+        ...details.responseHeaders,
+        authorization: cookies
+      }
+    });
+  });
+}
+electron.app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    electron.app.quit();
+    win = null;
+  }
+});
+electron.app.on("activate", () => {
+  if (electron.BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+electron.app.whenReady().then(createWindow);
+exports.MAIN_DIST = MAIN_DIST;
+exports.RENDERER_DIST = RENDERER_DIST;
+exports.VITE_DEV_SERVER_URL = VITE_DEV_SERVER_URL;

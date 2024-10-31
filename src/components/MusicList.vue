@@ -69,7 +69,7 @@ const toMusicDetail=(item:any)=>{
 @import "../assets/mixin.scss";
 $num: (
   "0px": 1,
-  "400px": 2,
+  "375px": 2,
   "600px": 3,
   "992px": 4,
   "1200px": 5,

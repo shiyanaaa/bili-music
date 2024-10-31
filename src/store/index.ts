@@ -15,6 +15,7 @@ export const useStore = defineStore("music", {
     setPlayList(list: Array<any>) {
       console.log("setPlayList", list);
       this.musicList = list;
+      this.current=0
     },
     setPlayStatus(status: string) {
       this.playStatus = status;
