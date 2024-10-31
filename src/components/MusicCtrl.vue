@@ -33,11 +33,18 @@
         </a-space>
       </div>
       <div>
-        <a-button @click="showPlayListHandle">
-          <template #icon>
-            <v-icon name="icon-liebiao" />
-          </template>
-        </a-button>
+        <a-space>
+          <a-button @click="changePlayType">
+            <template #icon>
+              <v-icon :name="playTypeMap[playType].icon" />
+            </template>
+          </a-button>
+          <a-button @click="showPlayListHandle">
+            <template #icon>
+              <v-icon name="icon-liebiao" />
+            </template>
+          </a-button>
+        </a-space>
       </div>
     </div>
     <audio
@@ -95,19 +102,19 @@
         </div>
       </div>
       <div class="main-bottom">
-        <div class="slider" @mousedown="onSliderMouseDown" @mouseup="onSliderMouseDown">
-          <a-slider
-            v-model:value="sliderVal"
-            @afterChange="onSliderChange"
-          />
+        <div
+          class="slider"
+          @mousedown="onSliderMouseDown"
+        >
+          <a-slider v-model:value="sliderVal" @afterChange="onSliderChange" />
         </div>
         <div class="main-ctrl">
           <div>
-            <a-button  @click="showPlayListHandle">
-              <template #icon>
-                <v-icon name="icon-liebiao" />
-              </template>
-            </a-button>
+            <a-button @click="changePlayType">
+            <template #icon>
+              <v-icon :name="playTypeMap[playType].icon" />
+            </template>
+          </a-button>
           </div>
           <a-space>
             <a-button @click="onPre">
@@ -184,6 +191,7 @@ import { ref, computed, watch, onMounted } from "vue";
 const music = computed(() => store.getMusic);
 const playStatus = computed(() => store.playStatus);
 const nextPlay = computed(() => store.nextPlay);
+const playType = computed(() => store.playType);
 const audioRef = ref();
 const playList = computed(() => store.getMusicList);
 const onCanPlay = () => {
@@ -240,7 +248,24 @@ const onCloseDetail = () => {
 const onPlay = () => {
   store.setPlayStatus("play");
 };
-
+const playTypeList=[
+  {name:"顺序播放",icon:"icon-liebiaoxunhuan",value:"order"},
+  {name:"单曲循环",icon:"icon-danquxunhuan-qianhuise",value:"one"},
+  {name:"随机播放",icon:"icon-suijibofang",value:"random"}
+]
+const playTypeMap:any={}
+playTypeList.forEach((item) => {
+  playTypeMap[item.value]=item
+})
+const changePlayType=()=>{
+  const index= playTypeList.findIndex(item=>item.value===playType.value)
+  if(index>=playTypeList.length-1){
+    store.setPlayType(playTypeList[0].value)
+  }else{
+    store.setPlayType(playTypeList[index+1].value)
+  }
+  
+}
 const onPause = () => {
   console.log("播放暂停");
   if (!audioRef.value) return;

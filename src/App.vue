@@ -30,9 +30,13 @@ onMounted(() => {
     playList=JSON.parse(playList) as any[]
     store.setPlayList(playList)
   }
-  let current:any= localStorage.getItem("current")
+  const current:any= localStorage.getItem("current")
   if(current){
     store.setIndex(Number(current))
+  }
+  const playType=localStorage.getItem("playType")
+  if(playType){
+    store.setPlayType(playType)
   }
 });
 const setDark=(val:boolean)=>{

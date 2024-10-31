@@ -9,9 +9,14 @@ export const useStore = defineStore("music", {
       musicList: [] as Array<any>,
       current: 0,
       playStatus: "pause",
+      playType:"order"
     };
   },
   actions: {
+    setPlayType(type:string){
+      this.playType=type
+      localStorage.setItem("playType", this.playType)
+    },
     setPlayList(list: Array<any>) {
       console.log("setPlayList", list);
       this.musicList = list;
