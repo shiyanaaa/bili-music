@@ -11,7 +11,7 @@
       </div>
       <div class="ctrl">
         <a-space>
-          <a-button @click="onPre">
+          <a-button @click="onPre" class="pre-btn">
             <template #icon>
               <v-icon name="icon-shangyishou" />
             </template>
@@ -30,9 +30,14 @@
               <v-icon name="icon-xiayishou" />
             </template>
           </a-button>
+          <a-button @click="showPlayListHandle" class="playListBtn">
+            <template #icon>
+              <v-icon name="icon-liebiao" />
+            </template>
+          </a-button>
         </a-space>
       </div>
-      <div>
+      <div class="ctrl-right">
         <a-space>
           <a-button @click="changePlayType">
             <template #icon>
@@ -102,19 +107,16 @@
         </div>
       </div>
       <div class="main-bottom">
-        <div
-          class="slider"
-          @mousedown="onSliderMouseDown"
-        >
+        <div class="slider" @mousedown="onSliderMouseDown">
           <a-slider v-model:value="sliderVal" @afterChange="onSliderChange" />
         </div>
         <div class="main-ctrl">
           <div>
             <a-button @click="changePlayType">
-            <template #icon>
-              <v-icon :name="playTypeMap[playType].icon" />
-            </template>
-          </a-button>
+              <template #icon>
+                <v-icon :name="playTypeMap[playType].icon" />
+              </template>
+            </a-button>
           </div>
           <a-space>
             <a-button @click="onPre">
@@ -204,9 +206,6 @@ const onSliderMouseDown = () => {
   console.log("开始拖动");
   changeFlag.value = true;
 };
-const onSliderMouseUp = () => {
-  changeFlag.value = false;
-};
 const onSliderChange = (val: number) => {
   changeFlag.value = false;
   audioRef.value.currentTime = (val / 100) * audioRef.value.duration;
@@ -248,24 +247,23 @@ const onCloseDetail = () => {
 const onPlay = () => {
   store.setPlayStatus("play");
 };
-const playTypeList=[
-  {name:"顺序播放",icon:"icon-liebiaoxunhuan",value:"order"},
-  {name:"单曲循环",icon:"icon-danquxunhuan-qianhuise",value:"one"},
-  {name:"随机播放",icon:"icon-suijibofang",value:"random"}
-]
-const playTypeMap:any={}
+const playTypeList = [
+  { name: "顺序播放", icon: "icon-liebiaoxunhuan", value: "order" },
+  { name: "单曲循环", icon: "icon-danquxunhuan-qianhuise", value: "one" },
+  { name: "随机播放", icon: "icon-suijibofang", value: "random" },
+];
+const playTypeMap: any = {};
 playTypeList.forEach((item) => {
-  playTypeMap[item.value]=item
-})
-const changePlayType=()=>{
-  const index= playTypeList.findIndex(item=>item.value===playType.value)
-  if(index>=playTypeList.length-1){
-    store.setPlayType(playTypeList[0].value)
-  }else{
-    store.setPlayType(playTypeList[index+1].value)
+  playTypeMap[item.value] = item;
+});
+const changePlayType = () => {
+  const index = playTypeList.findIndex((item) => item.value === playType.value);
+  if (index >= playTypeList.length - 1) {
+    store.setPlayType(playTypeList[0].value);
+  } else {
+    store.setPlayType(playTypeList[index + 1].value);
   }
-  
-}
+};
 const onPause = () => {
   console.log("播放暂停");
   if (!audioRef.value) return;
@@ -413,42 +411,70 @@ const winMin = () => {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 0 15px;
     user-select: none;
-
     .ctrl {
       display: flex;
       align-items: center;
+      
     }
-
+    .ctrl-right {
+      margin-left: 40px;
+      @media (max-width: 550px) {
+        display: none;
+      }
+    }
+    .playListBtn{
+      @media (min-width: 550px) {
+        display: none;
+      }
+    }
+    .pre-btn {
+      @media (max-width: 550px) {
+        display: none;
+      }
+    }
     .pic-box {
       height: 80px;
-      width: calc(80px * calc(16 / 9));
       display: flex;
       user-select: none;
+      flex: 1;
+        min-width: 0;
       .title {
-        width: 300px;
         padding: 10px;
         flex-shrink: 0;
+        font-size: 14px;
+        width: unset;
+          flex: 1;
+          min-width: 0;
       }
+
       .pic {
-        width: 100%;
-        height: 100%;
+        width: calc(80px * calc(16 / 9));
+        height: 80px;
         border-radius: 4px;
         box-shadow: var(--shadow);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 30px;
+        @media (max-width: 550px) {
+          width: calc(60px * calc(16 / 9));
+          height: 60px;
+          margin: 10px 0;
+        }
       }
       img {
-        width: 100%;
-        height: 100%;
+        width: calc(80px * calc(16 / 9));
+        height: 80px;
         object-fit: cover;
         border-radius: 4px;
         cursor: pointer;
-
+        @media (max-width: 550px) {
+          width: calc(60px * calc(16 / 9));
+          height: 60px;
+          margin: 10px 0;
+        }
         &:hover {
           box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
         }
