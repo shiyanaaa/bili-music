@@ -17,10 +17,10 @@
       </a-button>
     </a-input-group>
 
-    <a-radio-group v-model:value="type" name="radioGroup">
+    <!-- <a-radio-group v-model:value="type" name="radioGroup">
       <a-radio value="1">歌曲</a-radio>
       <a-radio value="2">歌单</a-radio>
-    </a-radio-group>
+    </a-radio-group> -->
     <a-tabs
       @change="getHotMusicList"
       v-model:activeKey="activeKey"

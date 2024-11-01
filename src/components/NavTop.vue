@@ -14,6 +14,11 @@
 
     <div class="setting">
       <a-space>
+        <a-button size="small" @click="doLogin">
+          <template #icon>
+            <v-icon name="icon-weidenglu" />
+          </template>
+        </a-button>
         <a-button size="small" @click="changeDark">
           <template #icon>
             <v-icon :name="isDarkVal?'icon-yueliang':'icon-taiyang'" />
@@ -36,16 +41,19 @@
         </a-button>
       </a-space>
     </div>
+    <LoginBox ref="loginBoxRef" />
   </div>
 </template>
 <script setup lang="ts">
-import { computed,inject, Ref  } from "vue";
+import LoginBox from "./LoginBox.vue";
+import { computed,inject, Ref,ref  } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useToggle } from "@vueuse/shared";
 import { useDark } from "@vueuse/core";
 const isDarkVal = inject('isDark') as Ref<boolean>
 const setDark = inject('setDark') as Function
+const loginBoxRef=ref()
 const changeDark=()=>{
   toggle()
   setDark(!isDarkVal.value)
@@ -76,6 +84,9 @@ const close = () => {
 const winMin = () => {
   window.ipcRenderer.send("window-min");
 };
+const doLogin=()=>{
+  loginBoxRef.value.show()
+}
 </script>
 <style scoped lang="scss">
 .nav_top {

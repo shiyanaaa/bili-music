@@ -8,11 +8,13 @@
     color: var(--color);
     --shadow:0px 0px 12px rgba(0, 0, 0, .12);
     --table-color:#fafafa;
+    --border-color:var(--vi-color-dark-info-1);
     &.dark{
         --color-background:var(--vi-color-dark-info-9);
         --color:var(--vi-color-light-info-9);
         --shadow:0px 0px 12px rgba(255,255,255, .12);
         --back-color:rgba(0,0,0,.3);
         --table-color:#141414;
+        --border-color:var(--vi-color-light-info-1);
     }
 }

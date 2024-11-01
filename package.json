@@ -23,6 +23,7 @@
     "pinia": "^2.2.4",
     "sass": "^1.80.4",
     "vue": "^3.4.21",
+    "vue-qrcode": "^2.2.2",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
