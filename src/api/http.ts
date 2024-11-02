@@ -10,6 +10,9 @@ instance.interceptors.request.use((config) => {
     if (localStorage.getItem("authorization")) {
       config.headers.authorization = localStorage.getItem("authorization");
     }
+    if(config.headers.SESSDATA){
+      config.headers.authorization = localStorage.getItem("SESSDATA_Cookies");
+    }
     if (config.headers.isWBI) {
       getEnc(config.params).then((res) => {
         config.params={}

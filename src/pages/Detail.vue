@@ -112,7 +112,7 @@ const formatDuration = (duration: number) => {
   const hours = Math.floor(duration / 3600);
   const minutes = Math.floor((duration % 3600) / 60);
   const secs = Math.floor(duration % 60);
-  console.log(hours, minutes, secs);
+  
   return [padZero(hours), padZero(minutes), padZero(secs)].join(":");
 };
 

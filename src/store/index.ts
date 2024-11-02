@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-
+import { getUserInfo } from "../api/user";
+import { exitLogin } from "../api/login";
 // 你可以任意命名 `defineStore()` 的返回值，但最好使用 store 的名字，同时以 `use` 开头且以 `Store` 结尾。
 // (比如 `useUserStore`，`useCartStore`，`useProductStore`)
 // 第一个参数是你的应用中 Store 的唯一 ID。
@@ -9,7 +10,8 @@ export const useStore = defineStore("music", {
       musicList: [] as Array<any>,
       current: 0,
       playStatus: "pause",
-      playType:"order"
+      playType:"order",
+      userInfo: {} as any,
     };
   },
   actions: {
@@ -25,8 +27,9 @@ export const useStore = defineStore("music", {
     setPlayStatus(status: string) {
       this.playStatus = status;
     },
-    changePlayById(id: number){
-      const index=this.musicList.findIndex(item=>item.aid===id)
+    changePlayById(row:any){
+      const index=this.musicList.findIndex(item=>item.cid===row.cid&&item.aid===row.aid)
+      console.log("changePlayById", index);
       if(index>=0){
         this.current=index;
         localStorage.setItem("current", String(this.current))
@@ -78,6 +81,27 @@ export const useStore = defineStore("music", {
     setIndex(num: number){
       this.current=num
       localStorage.setItem("current", String(this.current))
+    },
+    updateUserInfo(callback?:Function){
+      getUserInfo().then(res=>{
+        if(res.data.code!==0){
+          this.userInfo=null;
+        }else{
+          this.userInfo=res.data.data;
+          callback&&callback()
+        }
+        
+      })
+    },
+    exitLogin(callback?:Function){
+      exitLogin().then(()=>{
+        this.userInfo=null
+        localStorage.removeItem("SESSDATA_Cookies")
+        localStorage.removeItem("refresh_token")
+        localStorage.removeItem("url")
+        localStorage.removeItem("timestamp")
+        callback&&callback()
+      })
     }
   },
   getters: {
@@ -87,5 +111,6 @@ export const useStore = defineStore("music", {
     getMusic: (state) => state.musicList[state.current],
     nextPlay: (state) => !!state.musicList[state.current + 1],
     prevPlay: (state) => !!state.musicList[state.current - 1],
+    getAvatar:(state)=>state.userInfo?state.userInfo.face:"",
   },
 });

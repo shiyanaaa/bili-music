@@ -1,5 +1,6 @@
 <template>
   <div class="nav_top">
+    <context-holder />
     <div class="top-left">
       <a-button class="back-btn" size="small" @click="back" v-if="showBack">
         <template #icon>
@@ -14,14 +15,28 @@
 
     <div class="setting">
       <a-space>
-        <a-button size="small" @click="doLogin">
+        <a-button size="small" @click="doLogin" v-if="!avatar">
           <template #icon>
             <v-icon name="icon-weidenglu" />
           </template>
         </a-button>
+        <a-dropdown :trigger="['click']" placement="bottom" v-else>
+          <a-avatar style="cursor: pointer" size="small" :src="avatar" />
+          <template #overlay>
+            <a-menu @click="onClickUser">
+              <a-menu-item key="1">
+                <a href="javascript:;">更新数据</a>
+              </a-menu-item>
+              <a-menu-item key="2">
+                <a href="javascript:;">退出登录</a>
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+
         <a-button size="small" @click="changeDark">
           <template #icon>
-            <v-icon :name="isDarkVal?'icon-yueliang':'icon-taiyang'" />
+            <v-icon :name="isDarkVal ? 'icon-yueliang' : 'icon-taiyang'" />
           </template>
         </a-button>
         <a-button size="small" @click="winMin">
@@ -46,18 +61,23 @@
 </template>
 <script setup lang="ts">
 import LoginBox from "./LoginBox.vue";
-import { computed,inject, Ref,ref  } from "vue";
+import { computed, inject, Ref, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { useStore } from "../store";
 import { useToggle } from "@vueuse/shared";
 import { useDark } from "@vueuse/core";
-const isDarkVal = inject('isDark') as Ref<boolean>
-const setDark = inject('setDark') as Function
-const loginBoxRef=ref()
-const changeDark=()=>{
-  toggle()
-  setDark(!isDarkVal.value)
-}
+import type { MenuProps } from "ant-design-vue";
+import { message } from 'ant-design-vue';
+const [messageApi, contextHolder] = message.useMessage();
+const store = useStore();
+const isDarkVal = inject("isDark") as Ref<boolean>;
+const setDark = inject("setDark") as Function;
+const loginBoxRef = ref();
+const avatar = computed(() => store.getAvatar);
+const changeDark = () => {
+  toggle();
+  setDark(!isDarkVal.value);
+};
 const isDark = useDark({
   // 存储到localStorage/sessionStorage中的Key 根据自己的需求更改
   storageKey: "useDarkKEY",
@@ -84,9 +104,22 @@ const close = () => {
 const winMin = () => {
   window.ipcRenderer.send("window-min");
 };
-const doLogin=()=>{
-  loginBoxRef.value.show()
-}
+const doLogin = () => {
+  loginBoxRef.value.show();
+};
+const onClickUser: MenuProps["onClick"] = ({ key }) => {
+  console.log("点击用户");
+  if (key === "1") {
+    store.updateUserInfo(() => {
+      messageApi.success("更新成功");
+    });
+  }
+  else if (key === "2") {
+    store.exitLogin(() => {
+      messageApi.success("退出成功");
+    });
+  }
+};
 </script>
 <style scoped lang="scss">
 .nav_top {

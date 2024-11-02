@@ -38,6 +38,7 @@ onMounted(() => {
   if(playType){
     store.setPlayType(playType)
   }
+  store.updateUserInfo()
 });
 const setDark=(val:boolean)=>{
   isDark.value=val

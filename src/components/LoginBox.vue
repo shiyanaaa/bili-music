@@ -41,8 +41,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { generateQrcode, pollQrcode } from "../api/login";
+import { useStore } from "../store";
 import VueQrcode from "vue-qrcode";
 const open = ref(false);
+const store = useStore();
 const qrcodeInfo = ref({
   url: "",
   qrcode_key: "",
@@ -66,7 +68,7 @@ const status = ref(0);
 const startRequest = () => {
   if (!open.value) return;
   pollQrcode(qrcodeInfo.value.qrcode_key).then((res) => {
-    console.log(res);
+    
     const { code, message } = res.data.data;
     if (code === 86101) status.value = 0;
     else if (code === 86090) status.value = 1;
@@ -81,6 +83,7 @@ const loginSuccess = (res: any) => {
   localStorage.setItem("refresh_token", res.data.data.refresh_token);
   localStorage.setItem("url", res.data.data.url);
   localStorage.setItem("timestamp", res.data.data.timestamp);
+  store.updateUserInfo();
   close();
 };
 const show = () => {

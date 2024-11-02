@@ -56,10 +56,12 @@ function createWindow() {
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       if (details.url.includes("bilibili")) {
+        const cookie = details.requestHeaders.authorization;
+        delete details.requestHeaders.authorization;
         callback({
           requestHeaders: {
             ...details.requestHeaders,
-            Cookie: details.requestHeaders.authorization,
+            Cookie: cookie,
             referer: "http://www.bilibili.com/"
           }
         });

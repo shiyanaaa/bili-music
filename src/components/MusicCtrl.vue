@@ -1,13 +1,14 @@
 <template>
+  <context-holder />
   <div class="music-ctrl">
     <div class="play-line" :style="lineStyle" @mouseup="onMouseUp"></div>
     <div class="ctrl-box">
-      <div class="pic-box" @click="onShowDetail">
-        <img v-if="music" :src="music.pic" alt="" />
+      <div class="pic-box">
+        <img v-if="music" :src="music.pic" alt="" @click="onShowDetail" />
         <div v-else class="pic">
           <v-icon name="icon-music"></v-icon>
         </div>
-        <div class="title">{{ music.title }}</div>
+        <div class="title">{{ music ? music.title : "" }}</div>
       </div>
       <div class="ctrl">
         <a-space>
@@ -42,6 +43,11 @@
           <a-button @click="changePlayType">
             <template #icon>
               <v-icon :name="playTypeMap[playType].icon" />
+            </template>
+          </a-button>
+          <a-button @click="showFavListHandle">
+            <template #icon>
+              <v-icon name="icon-shoucang2" />
             </template>
           </a-button>
           <a-button @click="showPlayListHandle">
@@ -159,7 +165,7 @@
     :open="showPlayList"
     @close="onClosePlayList"
   >
-    <a-list item-layout="horizontal" :data-source="playList">
+    <a-list class="card-list" item-layout="horizontal" :data-source="playList">
       <template #renderItem="{ item }">
         <a-list-item>
           <a-list-item-meta style="cursor: pointer" @click="changePlay(item)">
@@ -183,12 +189,70 @@
       </template>
     </a-list>
   </a-drawer>
+  <a-drawer
+    title="收藏列表"
+    placement="right"
+    :headerStyle="playListHeaderStyle"
+    :open="showFavList"
+    @close="onCloseFavList"
+  >
+    <a-collapse @change="onFavChange" accordion v-model:activeKey="chooseFav">
+      <a-collapse-panel v-for="item in favList" :key="item.id">
+        <template v-slot:header>
+          <div class="fav-title">
+            <div class="fav-name">
+              {{ `${item.title}(${item.media_count})` }}
+            </div>
+            <a-button type="primary" @click.stop size="small"
+              >播放全部</a-button
+            >
+          </div>
+        </template>
+        <a-list v-if="(favListContent.length!==0||!favItemLoading)" class="card-list" item-layout="horizontal" :data-source="favListContent">
+          <template #renderItem="{ item }">
+            <a-list-item>
+              <a-list-item-meta
+                style="cursor: pointer"
+                @click="playItem(item)"
+              >
+                <template #title>
+                  <a class="one-line block">{{ item.title }}</a>
+                </template>
+                <template #avatar>
+                  <a-image
+                    style="border-radius: 4px"
+                    :width="80"
+                    :height="45"
+                    :preview="false"
+                    :src="item.cover"
+                  />
+                </template>
+                <template #description>
+                  <div>{{ item.duration }}</div>
+                </template>
+              </a-list-item-meta>
+            </a-list-item>
+          </template>
+        </a-list>
+        <div class="has_more" v-if="hasMore">
+          <a-button type="link" @click="loadMore">加载更多</a-button>
+        </div>
+        <div class="fav-item-loading" v-if="favItemLoading">
+          <a-spin />
+        </div>
+      </a-collapse-panel>
+    </a-collapse>
+  </a-drawer>
 </template>
 <script setup lang="ts">
 import { useStore } from "../store/index";
 import { getVideoDetail } from "../api/music";
+import { getFavList, getFavListContentByMid } from "../api/fav";
+import { getDetail } from "../api/music";
 // 可以在组件中的任意位置访问 `store` 变量 ✨
 const store = useStore();
+import { message } from "ant-design-vue";
+const [messageApi, contextHolder] = message.useMessage();
 import { ref, computed, watch, onMounted } from "vue";
 const music = computed(() => store.getMusic);
 const playStatus = computed(() => store.playStatus);
@@ -215,14 +279,32 @@ const loading = ref(false);
 const showPlayListHandle = () => {
   showPlayList.value = true;
 };
+const showFavList = ref(false);
+const favList = ref<any>([]);
+const chooseFav = ref("");
+const showFavListHandle = () => {
+  if (!store.userInfo) {
+    messageApi.warning("请先登录");
+    return;
+  }
+  showFavList.value = true;
+  getFavList(store.userInfo.mid).then((res) => {
+    console.log(res.data.data.list);
+    favList.value = res.data.data.list;
+  });
+};
+const favItemLoading = ref(false);
 onMounted(() => {
   if (music.value && music.value.cid) getPlayUrl(music.value);
 });
 const onClosePlayList = () => {
   showPlayList.value = false;
 };
+const onCloseFavList = () => {
+  showFavList.value = false;
+};
 const changePlay = (item: any) => {
-  store.changePlayById(item.aid);
+  store.changePlayById(item);
   store.setPlayStatus("play");
 };
 const headerStyle = {
@@ -297,7 +379,10 @@ const playInfo = ref({
 });
 const onTimeUpdate = () => {
   if (audioRef.value) {
-    if (Number.isNaN(audioRef.value.duration)) return;
+    if (Number.isNaN(audioRef.value.duration)) {
+      playInfo.value.playLine = 0;
+      return;
+    }
     playInfo.value = {
       duration: audioRef.value.duration,
       currentTime: audioRef.value.currentTime,
@@ -347,6 +432,70 @@ watch(
     getPlayUrl(newValue);
   }
 );
+const pages = ref(1);
+const favListContent = ref<any>([]);
+const onFavChange = (key:any) => {
+  pages.value = 1;
+  favListContent.value=[]
+  if(key)
+  getFavListContent();
+};
+const loadMore=()=>{
+  pages.value++;
+  getFavListContent();
+}
+const formatDuration = (duration: number) => {
+  console.log(duration);
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const secs = Math.floor(duration % 60);
+  
+  return [padZero(hours), padZero(minutes), padZero(secs)].join(":");
+};
+const padZero = (num: number): string => {
+  return num.toString().padStart(2, "0");
+};
+const hasMore=ref(false)
+const getFavListContent = () => {
+  favItemLoading.value = true;
+  hasMore.value=false;
+  getFavListContentByMid(chooseFav.value, pages.value)
+    .then((res) => {
+      const data=res.data.data.medias.map((item:any)=>{
+        return {
+          ...item,
+          duration:formatDuration(item.duration)
+        }
+      })
+      favListContent.value=[...favListContent.value,...data];
+      hasMore.value=res.data.data.has_more;
+    })
+    .finally(() => {
+      favItemLoading.value = false;
+    });
+};
+const playItem=(item:any)=>{
+  console.log(item);
+  if(item.attr!==0){
+
+    messageApi.warning("当前稿件已失效")
+    return;
+  }
+  getDetail({
+    aid: item.id,
+    bvid: item.bvid,
+  }).then((res) => {
+    const mainData = res.data.data;
+    store.push({
+      pic: mainData.pic,
+      title: mainData.title,
+      aid: mainData.aid,
+      bvid: mainData.bvid,
+      cid:mainData.cid
+    });
+    store.setPlayStatus("play");
+  });
+}
 const getPlayUrl = (newValue: any) => {
   loading.value = true;
   getVideoDetail({
@@ -416,7 +565,6 @@ const winMin = () => {
     .ctrl {
       display: flex;
       align-items: center;
-      
     }
     .ctrl-right {
       margin-left: 40px;
@@ -424,7 +572,7 @@ const winMin = () => {
         display: none;
       }
     }
-    .playListBtn{
+    .playListBtn {
       @media (min-width: 550px) {
         display: none;
       }
@@ -439,14 +587,14 @@ const winMin = () => {
       display: flex;
       user-select: none;
       flex: 1;
-        min-width: 0;
+      min-width: 0;
       .title {
         padding: 10px;
         flex-shrink: 0;
         font-size: 14px;
         width: unset;
-          flex: 1;
-          min-width: 0;
+        flex: 1;
+        min-width: 0;
       }
 
       .pic {
@@ -552,8 +700,29 @@ const winMin = () => {
     }
   }
 }
-
+.fav-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fav-item-loading {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .action {
   -webkit-app-region: no-drag;
+}
+.card-list{
+  :deep(.ant-list-item){
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+.has_more{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
